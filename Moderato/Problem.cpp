@@ -34,6 +34,9 @@ namespace moderato {
 Problem::Problem(Position position, int nMoves)
     : position_(std::move(position)), nMoves_(nMoves) {}
 Problem::~Problem() {}
+bool Problem::evaluateTerminalNode(Position& position, bool stalemate) {
+  return position.isCheck() == 0 == stalemate;
+}
 
 void solve(const Task& task) {
   std::cout << std::string(72, '-') << std::endl;
@@ -83,8 +86,7 @@ std::ostream& operator<<(std::ostream& output, const Problem& problem) {
 
 std::ostream& operator<<(std::ostream& output,
                          const AnalysisOptions& analysisOptions) {
-  output << "AnalysisOptions[zero=" << analysisOptions.zero
-         << ", setPlay=" << analysisOptions.setPlay
+  output << "AnalysisOptions[setPlay=" << analysisOptions.setPlay
          << ", nRefutations=" << analysisOptions.nRefutations
          << ", variations=" << analysisOptions.variations
          << ", threats=" << analysisOptions.threats

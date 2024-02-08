@@ -39,7 +39,6 @@ class MateProblem : virtual public Problem {
  protected:
   const bool stalemate_;
   MateProblem(bool stalemate);
-  bool evaluateTerminalNode(Position& position, bool stalemate);
 };
 
 class BattleMatePlay {
@@ -79,7 +78,6 @@ class BattleMatePlay {
 };
 
 class Directmate : public MateProblem, protected BattleMatePlay {
-  void solve(Position& position, bool stalemate, int nMoves, int translate);
   int searchMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;
@@ -133,6 +131,32 @@ class Helpmate : public HelpProblem, MateProblem {
 
  public:
   Helpmate(Position position, bool stalemate, int nMoves, bool halfMove);
+  void solve(const AnalysisOptions& analysisOptions,
+             const DisplayOptions& displayOptions) override;
+};
+
+class MateSearch : public Problem {
+  void solve(Position& position, int nMoves, int translate);
+  int searchMax(Position& position, int depth,
+                const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax);
+  int searchMin(Position& position, int depth,
+                const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin);
+  void write(std::ostream& output) const override;
+
+ public:
+  MateSearch(Position position, int nMoves);
+  void solve(const AnalysisOptions& analysisOptions,
+             const DisplayOptions& displayOptions) override;
+};
+
+class Perft : public HelpProblem {
+  void solve(Position& position, int nMoves, bool halfMove);
+  long analyse(Position& position, int depth,
+               const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves);
+  void write(std::ostream& output) const override;
+
+ public:
+  Perft(Position position, int nMoves, bool halfMove);
   void solve(const AnalysisOptions& analysisOptions,
              const DisplayOptions& displayOptions) override;
 };

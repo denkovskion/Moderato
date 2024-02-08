@@ -34,26 +34,26 @@ namespace moderato {
 HelpProblem::HelpProblem(bool halfMove) : halfMove_(halfMove) {}
 
 MateProblem::MateProblem(bool stalemate) : stalemate_(stalemate) {}
-bool MateProblem::evaluateTerminalNode(Position& position, bool stalemate) {
-  return position.isCheck() == 0 == stalemate;
-}
 
 void BattleMatePlay::solve(Position& position, bool stalemate, int nMoves,
                            bool includeSetPlay, int includeTries,
                            bool includeVariations, bool includeThreats,
                            bool includeShortVariations, int translate,
                            bool logMoves) {
-  std::vector<std::pair<
-      std::pair<Play, std::shared_ptr<Move>>,
-      std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>
-      branches;
   std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
+    std::vector<std::pair<
+        std::pair<Play, std::shared_ptr<Move>>,
+        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>
+        branches;
     analyseMax(position, stalemate, nMoves, pseudoLegalMoves, branches,
                includeVariations, includeThreats, includeShortVariations,
                includeSetPlay, includeTries, includeActualPlay,
                includeActualPlay, logMoves);
+    std::cout << toFormatted(
+                     toTransformed(toFlattened(branches), position, translate))
+              << std::endl;
   }
   if (!includeActualPlay) {
     if (includeSetPlay) {
@@ -62,9 +62,6 @@ void BattleMatePlay::solve(Position& position, bool stalemate, int nMoves,
       std::cout << "Illegal position." << std::endl;
     }
   }
-  std::cout << toFormatted(
-                   toTransformed(toFlattened(branches), position, translate))
-            << std::endl;
 }
 void BattleMatePlay::analyseMax(
     Position& position, bool stalemate, int depth,
@@ -234,41 +231,11 @@ Directmate::Directmate(Position position, bool stalemate, int nMoves)
     : Problem(std::move(position), nMoves), MateProblem(stalemate) {}
 void Directmate::solve(const AnalysisOptions& analysisOptions,
                        const DisplayOptions& displayOptions) {
-  if (analysisOptions.zero) {
-    solve(position_, stalemate_, nMoves_, displayOptions.outputLanguage);
-  } else {
-    BattleMatePlay::solve(
-        position_, stalemate_, nMoves_, analysisOptions.setPlay,
-        analysisOptions.nRefutations, analysisOptions.variations,
-        analysisOptions.threats, analysisOptions.shortVariations,
-        displayOptions.outputLanguage, displayOptions.internalProgress);
-  }
-}
-void Directmate::solve(Position& position, bool stalemate, int nMoves,
-                       int translate) {
-  std::vector<std::pair<std::string, std::shared_ptr<Move>>> points;
-  std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
-  if (position.isLegal(pseudoLegalMovesMax)) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
-      if (move->make(position, pseudoLegalMovesMin)) {
-        int score =
-            searchMin(position, stalemate, nMoves, pseudoLegalMovesMin, 0);
-        if (score > 0) {
-          if (!stalemate) {
-            points.push_back({"+M" + std::to_string(nMoves - score + 1), move});
-          } else {
-            points.push_back({"=" + std::to_string(nMoves - score + 1), move});
-          }
-        }
-      }
-      move->unmake(position);
-    }
-  } else {
-    std::cout << "Illegal position." << std::endl;
-  }
-  std::cout << toFormatted(toTransformed(points, position, translate))
-            << std::endl;
+  BattleMatePlay::solve(
+      position_, stalemate_, nMoves_, analysisOptions.setPlay,
+      analysisOptions.nRefutations, analysisOptions.variations,
+      analysisOptions.threats, analysisOptions.shortVariations,
+      displayOptions.outputLanguage, displayOptions.internalProgress);
 }
 int Directmate::searchMax(
     Position& position, bool stalemate, int depth,
@@ -466,10 +433,10 @@ void Helpmate::solve(const AnalysisOptions& analysisOptions,
 void Helpmate::solve(Position& position, bool stalemate, int nMoves,
                      bool halfMove, bool includeSetPlay, bool includeTempoTries,
                      int translate, bool logMoves) {
-  std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> lines;
   std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
+    std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> lines;
     std::deque<std::pair<Play, std::shared_ptr<Move>>> line;
     if (halfMove) {
       analyseMax(position, stalemate, nMoves + 1, pseudoLegalMoves, line, lines,
@@ -480,6 +447,8 @@ void Helpmate::solve(Position& position, bool stalemate, int nMoves,
                  includeTempoTries, includeSetPlay, includeActualPlay,
                  logMoves);
     }
+    std::cout << toFormatted(toTransformed(lines, position, translate))
+              << std::endl;
   }
   if (!includeActualPlay) {
     if (includeSetPlay) {
@@ -488,8 +457,6 @@ void Helpmate::solve(Position& position, bool stalemate, int nMoves,
       std::cout << "Illegal position." << std::endl;
     }
   }
-  std::cout << toFormatted(toTransformed(lines, position, translate))
-            << std::endl;
 }
 void Helpmate::analyseMax(
     Position& position, bool stalemate, int depth,
@@ -607,6 +574,132 @@ void Helpmate::analyseMin(
 void Helpmate::write(std::ostream& output) const {
   output << "Helpmate[position=" << position_ << ", stalemate=" << stalemate_
          << ", nMoves=" << nMoves_ << ", halfMove=" << halfMove_ << "]";
+}
+
+MateSearch::MateSearch(Position position, int nMoves)
+    : Problem(std::move(position), nMoves) {}
+void MateSearch::solve(const AnalysisOptions& analysisOptions,
+                       const DisplayOptions& displayOptions) {
+  solve(position_, nMoves_, displayOptions.outputLanguage);
+}
+void MateSearch::solve(Position& position, int nMoves, int translate) {
+  std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+  if (position.isLegal(pseudoLegalMovesMax)) {
+    std::vector<std::pair<std::string, std::shared_ptr<Move>>> points;
+    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
+      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+      if (move->make(position, pseudoLegalMovesMin)) {
+        for (int depth = 1; depth <= nMoves; depth++) {
+          int score = searchMin(position, depth, pseudoLegalMovesMin);
+          if (score > 0) {
+            points.push_back({"+M" + std::to_string(depth), move});
+            break;
+          }
+        }
+      }
+      move->unmake(position);
+    }
+    std::cout << toFormatted(toTransformed(points, position, translate))
+              << std::endl;
+  } else {
+    std::cout << "Illegal position." << std::endl;
+  }
+}
+int MateSearch::searchMax(
+    Position& position, int depth,
+    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) {
+  int max = -1;
+  for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
+    std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    if (move->make(position, pseudoLegalMovesMin)) {
+      max = searchMin(position, depth, pseudoLegalMovesMin);
+    }
+    move->unmake(position);
+    if (max > 0) {
+      break;
+    }
+  }
+  return max;
+}
+int MateSearch::searchMin(
+    Position& position, int depth,
+    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin) {
+  int min = 0;
+  if (depth == 1) {
+    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
+      if (move->make(position)) {
+        min = -1;
+      }
+      move->unmake(position);
+      if (min < 0) {
+        break;
+      }
+    }
+  } else {
+    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
+      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+      if (move->make(position, pseudoLegalMovesMax)) {
+        min = searchMax(position, depth - 1, pseudoLegalMovesMax);
+      }
+      move->unmake(position);
+      if (min < 0) {
+        break;
+      }
+    }
+  }
+  if (min == 0) {
+    if (evaluateTerminalNode(position, false)) {
+      min = 1;
+    } else {
+      min = -1;
+    }
+  }
+  return min;
+}
+void MateSearch::write(std::ostream& output) const {
+  output << "MateSearch[position=" << position_ << ", nMoves=" << nMoves_
+         << "]";
+}
+
+Perft::Perft(Position position, int nMoves, bool halfMove)
+    : Problem(std::move(position), nMoves), HelpProblem(halfMove) {}
+void Perft::solve(const AnalysisOptions& analysisOptions,
+                  const DisplayOptions& displayOptions) {
+  solve(position_, nMoves_, halfMove_);
+}
+void Perft::solve(Position& position, int nMoves, bool halfMove) {
+  std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
+  if (position.isLegal(pseudoLegalMoves)) {
+    long nNodes;
+    if (halfMove) {
+      nNodes = analyse(position, nMoves * 2 + 1, pseudoLegalMoves);
+    } else {
+      nNodes = analyse(position, nMoves * 2, pseudoLegalMoves);
+    }
+    std::cout << nNodes << std::endl;
+  } else {
+    std::cout << "Illegal position." << std::endl;
+  }
+}
+long Perft::analyse(
+    Position& position, int depth,
+    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
+  if (depth == 0) {
+    return 1;
+  }
+  long nNodes = 0;
+  for (const std::shared_ptr<Move>& move : pseudoLegalMoves) {
+    std::vector<std::shared_ptr<Move>> pseudoLegalMovesNext;
+    if (move->make(position, pseudoLegalMovesNext)) {
+      nNodes += analyse(position, depth - 1, pseudoLegalMovesNext);
+    }
+    move->unmake(position);
+  }
+  return nNodes;
+}
+void Perft::write(std::ostream& output) const {
+  output << "Perft[position=" << position_ << ", nMoves=" << nMoves_
+         << ", halfMove=" << halfMove_ << "]";
 }
 
 }  // namespace moderato

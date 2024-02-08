@@ -49,8 +49,8 @@ struct Piece {
   PieceType pieceType;
   Colour colour;
 };
-enum StipulationType { Direct, Help, Self };
-enum Goal { Mate, Stalemate };
+enum StipulationType { Direct = 1, Help, Self };
+enum Goal { Mate = 1, Stalemate };
 struct Stipulation {
   StipulationType stipulationType;
   Goal goal;
@@ -81,8 +81,8 @@ struct Problem {
 
 void validateProblem(const popeye::Problem& specification);
 void verifyProblem(const popeye::Problem& specification);
-void convertProblem(const popeye::Problem& specification, int inputFormat,
-                    int inputLanguage, std::vector<Task>& tasks);
+void convertProblem(const popeye::Problem& specification, int inputLanguage,
+                    std::vector<Task>& tasks);
 
 std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
   enum Transition {
@@ -101,11 +101,10 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
     kEpdCastling,
     kEpdEnPassant,
     kEpdOpcode,
+    kEpdAcd,
     kEpdDm
   };
   std::set<Transition> transitions = {kPopeyeLanguage, kEpdForsyth};
-  enum Description { kEpd, kPopeye };
-  int inputFormat = kEpd;
   enum Language { kEnglish = 1, kFrench, kGerman };
   int inputLanguage = 0;
   bool french = false;
@@ -125,18 +124,15 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         popeyeToken.push_back(std::tolower(c));
       }
       if (transitions.count(kPopeyeLanguage) && popeyeToken == "beginproblem") {
-        inputFormat = kPopeye;
         inputLanguage = kEnglish;
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeLanguage) &&
                  popeyeToken == "debutprobleme") {
-        inputFormat = kPopeye;
         inputLanguage = kFrench;
         french = true;
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeLanguage) &&
                  popeyeToken == "anfangproblem") {
-        inputFormat = kPopeye;
         inputLanguage = kGerman;
         german = true;
         transitions = {kPopeyeCommand, kPopeyeDirective};
@@ -388,9 +384,10 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         hasNextLine = false;
         transitions = {kEpdSideToMove};
       } else if (transitions.count(kEpdSideToMove) && token == "w") {
+        colour = popeye::White;
         transitions = {kEpdCastling};
       } else if (transitions.count(kEpdSideToMove) && token == "b") {
-        options.halfDuplex = true;
+        colour = popeye::Black;
         transitions = {kEpdCastling};
       } else if (transitions.count(kEpdCastling) &&
                  std::regex_match(token, std::regex("\\bK?Q?k?q?"))) {
@@ -430,14 +427,38 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         transitions = {kEpdOpcode};
       } else if (transitions.count(kEpdEnPassant) && token == "-") {
         transitions = {kEpdOpcode};
+      } else if (transitions.count(kEpdOpcode) && token == "acd") {
+        transitions = {kEpdAcd};
+      } else if (transitions.count(kEpdAcd) &&
+                 std::regex_match(token, std::regex("(0|[1-9]\\d*);$"))) {
+        int nPlies = std::stoi(token.erase(token.find(';')));
+        int nMoves = (nPlies + 1) / 2;
+        stipulation = {popeye::Help, {}, nMoves};
+        if (nPlies % 2 == 1) {
+          options.whiteToPlay = true;
+          if (colour == popeye::Black) {
+            options.halfDuplex = true;
+          }
+        } else {
+          if (colour == popeye::White) {
+            options.halfDuplex = true;
+          }
+        }
+        problems.push_back({options, stipulation, pieces});
+        options = {};
+        stipulation = {};
+        pieces = {};
+        hasNextLine = true;
+        transitions = {kEpdForsyth};
       } else if (transitions.count(kEpdOpcode) && token == "dm") {
         transitions = {kEpdDm};
       } else if (transitions.count(kEpdDm) &&
                  std::regex_match(token, std::regex("[1-9]\\d*;$"))) {
-        popeye::StipulationType stipulationType = popeye::Direct;
-        popeye::Goal goal = popeye::Mate;
         int nMoves = std::stoi(token.erase(token.find(';')));
-        stipulation = {stipulationType, goal, nMoves};
+        stipulation = {popeye::Direct, {}, nMoves};
+        if (colour == popeye::Black) {
+          options.halfDuplex = true;
+        }
         problems.push_back({options, stipulation, pieces});
         options = {};
         stipulation = {};
@@ -456,13 +477,13 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
   for (const popeye::Problem& problem : problems) {
     validateProblem(problem);
     verifyProblem(problem);
-    convertProblem(problem, inputFormat, inputLanguage, tasks);
+    convertProblem(problem, inputLanguage, tasks);
   }
   return input;
 }
 
 void validateProblem(const popeye::Problem& specification) {
-  if (!specification.stipulation.nMoves) {
+  if (!specification.stipulation.stipulationType) {
     throw std::invalid_argument(
         "Task conversion failure (missing stipulation).");
   }
@@ -580,8 +601,8 @@ void verifyProblem(const popeye::Problem& specification) {
   }
 }
 
-void convertProblem(const popeye::Problem& specification, int inputFormat,
-                    int inputLanguage, std::vector<Task>& tasks) {
+void convertProblem(const popeye::Problem& specification, int inputLanguage,
+                    std::vector<Task>& tasks) {
   std::array<std::unique_ptr<Piece>, 128> board;
   for (const popeye::Piece& piece : specification.pieces) {
     int square = 16 * piece.square.file + piece.square.rank;
@@ -658,16 +679,23 @@ void convertProblem(const popeye::Problem& specification, int inputFormat,
   bool stalemate = specification.stipulation.goal == popeye::Stalemate;
   std::unique_ptr<Problem> problem;
   if (specification.stipulation.stipulationType == popeye::Help) {
-    problem = std::make_unique<Helpmate>(std::move(position), stalemate, nMoves,
-                                         halfMove);
+    if (!specification.stipulation.goal) {
+      problem = std::make_unique<Perft>(std::move(position), nMoves, halfMove);
+    } else {
+      problem = std::make_unique<Helpmate>(std::move(position), stalemate,
+                                           nMoves, halfMove);
+    }
   } else if (specification.stipulation.stipulationType == popeye::Self) {
     problem =
         std::make_unique<Selfmate>(std::move(position), stalemate, nMoves);
   } else {
-    problem =
-        std::make_unique<Directmate>(std::move(position), stalemate, nMoves);
+    if (!specification.stipulation.goal) {
+      problem = std::make_unique<MateSearch>(std::move(position), nMoves);
+    } else {
+      problem =
+          std::make_unique<Directmate>(std::move(position), stalemate, nMoves);
+    }
   }
-  bool zero = !inputFormat;
   bool setPlay = specification.options.setPlay;
   int nRefutations =
       !(specification.stipulation.stipulationType == popeye::Help)
@@ -687,14 +715,18 @@ void convertProblem(const popeye::Problem& specification, int inputFormat,
   bool tempoTries =
       specification.stipulation.stipulationType == popeye::Help &&
       (specification.options.nullMoves || specification.options.tri);
-  AnalysisOptions analysisOptions = {zero,       setPlay, nRefutations,
-                                     variations, threats, shortVariations,
-                                     tempoTries};
+  AnalysisOptions analysisOptions;
+  if (specification.stipulation.goal) {
+    analysisOptions = {setPlay, nRefutations,    variations,
+                       threats, shortVariations, tempoTries};
+  }
   int outputLanguage = inputLanguage;
   bool internalModel = !specification.options.noBoard;
   bool internalProgress = specification.options.moveNumbers;
-  DisplayOptions displayOptions = {outputLanguage, internalModel,
-                                   internalProgress};
+  DisplayOptions displayOptions;
+  if (specification.stipulation.goal) {
+    displayOptions = {outputLanguage, internalModel, internalProgress};
+  }
   tasks.push_back({std::move(problem), analysisOptions, displayOptions});
 }
 

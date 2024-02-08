@@ -31,21 +31,20 @@
 namespace moderato {
 
 struct AnalysisOptions {
-  bool zero;
-  bool setPlay;
-  int nRefutations;
-  bool variations;
-  bool threats;
-  bool shortVariations;
-  bool tempoTries;
+  bool setPlay = false;
+  int nRefutations = 0;
+  bool variations = false;
+  bool threats = false;
+  bool shortVariations = false;
+  bool tempoTries = false;
 };
 std::ostream& operator<<(std::ostream& output,
                          const AnalysisOptions& analysisOptions);
 
 struct DisplayOptions {
-  int outputLanguage;
-  bool internalModel;
-  bool internalProgress;
+  int outputLanguage = 0;
+  bool internalModel = false;
+  bool internalProgress = false;
 };
 std::ostream& operator<<(std::ostream& output,
                          const DisplayOptions& displayOptions);
@@ -57,6 +56,7 @@ class Problem {
   Position position_;
   const int nMoves_;
   Problem(Position position, int nMoves);
+  bool evaluateTerminalNode(Position& position, bool stalemate);
 
  public:
   virtual ~Problem();
