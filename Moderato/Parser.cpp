@@ -116,6 +116,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
   popeye::Colour colour = {};
   bool hasNextLine = true;
   for (std::string line; hasNextLine && std::getline(input, line);) {
+    bool epdLine = false;
     std::istringstream tokenInput(line);
     bool hasNextToken = true;
     for (std::string token; hasNextToken && tokenInput >> token;) {
@@ -328,68 +329,52 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         hasNextToken = false;
         hasNextLine = false;
         transitions = {};
-      } else if (transitions.count(kEpdForsyth)) {
-        int iRank = popeye::Rank::_8;
-        int iFile = popeye::File::_a;
-        std::string pieceRegex = "[KQRBNPkqrbnp12345678]";
-        int index = 0;
-        while (true) {
-          if (!std::regex_match(std::string().append(1, token[index]),
-                                std::regex(pieceRegex))) {
-            throw std::invalid_argument("Parse failure (invalid token: \"" +
-                                        token + "\").");
-          }
-          char pieceSymbol = token[index++];
-          if (std::isalpha(pieceSymbol)) {
+      } else if (!epdLine && transitions.count(kEpdForsyth) &&
+                 !std::regex_search(token, std::regex("\\d{2,}")) &&
+                 std::regex_match(
+                     std::accumulate(
+                         token.cbegin(), token.cend(), std::string(),
+                         [](const std::string& sum, unsigned char symbol) {
+                           return sum + (std::isdigit(symbol)
+                                             ? std::string(symbol - '0', '1')
+                                             : std::string(1, symbol));
+                         }),
+                     std::regex(
+                         "([KQRBNPkqrbnp1]{8}/){7}[KQRBNPkqrbnp1]{8}"))) {
+        int iRank = popeye::_8;
+        int iFile = popeye::_a;
+        for (unsigned char symbol : token) {
+          if (std::isalpha(symbol)) {
             popeye::Colour colour =
-                std::islower(pieceSymbol) ? popeye::Black : popeye::White;
+                std::islower(symbol) ? popeye::Black : popeye::White;
             popeye::PieceType pieceType =
-                std::tolower(pieceSymbol) == 'q'   ? popeye::Queen
-                : std::tolower(pieceSymbol) == 'r' ? popeye::Rook
-                : std::tolower(pieceSymbol) == 'b' ? popeye::Bishop
-                : std::tolower(pieceSymbol) == 'n' ? popeye::Knight
-                : std::tolower(pieceSymbol) == 'p' ? popeye::Pawn
-                                                   : popeye::King;
+                std::tolower(symbol) == 'q'   ? popeye::Queen
+                : std::tolower(symbol) == 'r' ? popeye::Rook
+                : std::tolower(symbol) == 'b' ? popeye::Bishop
+                : std::tolower(symbol) == 'n' ? popeye::Knight
+                : std::tolower(symbol) == 'p' ? popeye::Pawn
+                                              : popeye::King;
             popeye::Square square = {static_cast<popeye::File>(iFile),
                                      static_cast<popeye::Rank>(iRank)};
             pieces.push_back({square, pieceType, colour});
             iFile++;
-            pieceRegex = "[KQRBNPkqrbnp" +
-                         std::string("12345678")
-                             .substr(0, static_cast<size_t>(popeye::File::_h) +
-                                            1 - iFile) +
-                         "]";
+          } else if (std::isdigit(symbol)) {
+            iFile += symbol - '0';
           } else {
-            iFile += pieceSymbol - '0';
-            pieceRegex = "[KQRBNPkqrbnp]";
-          }
-          if (iFile == popeye::File::_h + 1) {
-            if (iRank == popeye::Rank::_1) {
-              if (index != token.length()) {
-                throw std::invalid_argument("Parse failure (invalid token: \"" +
-                                            token + "\").");
-              }
-              break;
-            } else {
-              if (token[index++] != '/') {
-                throw std::invalid_argument("Parse failure (invalid token: \"" +
-                                            token + "\").");
-              }
-              iRank--;
-              iFile = popeye::File::_a;
-              pieceRegex = "[KQRBNPkqrbnp12345678]";
-            }
+            iRank--;
+            iFile = popeye::_a;
           }
         }
+        epdLine = true;
         hasNextLine = false;
         transitions = {kEpdSideToMove};
-      } else if (transitions.count(kEpdSideToMove) && token == "w") {
+      } else if (epdLine && transitions.count(kEpdSideToMove) && token == "w") {
         colour = popeye::White;
         transitions = {kEpdCastling};
-      } else if (transitions.count(kEpdSideToMove) && token == "b") {
+      } else if (epdLine && transitions.count(kEpdSideToMove) && token == "b") {
         colour = popeye::Black;
         transitions = {kEpdCastling};
-      } else if (transitions.count(kEpdCastling) &&
+      } else if (epdLine && transitions.count(kEpdCastling) &&
                  std::regex_match(token, std::regex("\\bK?Q?k?q?"))) {
         if (token.find('K') == std::string::npos) {
           options.noCastling.push_back({popeye::_h, popeye::_1});
@@ -412,26 +397,27 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
           options.noCastling.push_back({popeye::_e, popeye::_8});
         }
         transitions = {kEpdEnPassant};
-      } else if (transitions.count(kEpdCastling) && token == "-") {
+      } else if (epdLine && transitions.count(kEpdCastling) && token == "-") {
         for (const popeye::File& file : {popeye::_h, popeye::_a, popeye::_e}) {
           for (const popeye::Rank& rank : {popeye::_1, popeye::_8}) {
             options.noCastling.push_back({file, rank});
           }
         }
         transitions = {kEpdEnPassant};
-      } else if (transitions.count(kEpdEnPassant) &&
+      } else if (epdLine && transitions.count(kEpdEnPassant) &&
                  std::regex_match(token, std::regex("[a-h][36]"))) {
         popeye::File file = static_cast<popeye::File>(token[0] - 'a');
         popeye::Rank rank = static_cast<popeye::Rank>(token[1] - '1');
         options.enPassant.push_back({file, rank});
         transitions = {kEpdOpcode};
-      } else if (transitions.count(kEpdEnPassant) && token == "-") {
+      } else if (epdLine && transitions.count(kEpdEnPassant) && token == "-") {
         transitions = {kEpdOpcode};
-      } else if (transitions.count(kEpdOpcode) && token == "acd") {
+      } else if (epdLine && transitions.count(kEpdOpcode) && token == "acd") {
         transitions = {kEpdAcd};
-      } else if (transitions.count(kEpdAcd) &&
-                 std::regex_match(token, std::regex("(0|[1-9]\\d*);$"))) {
-        int nPlies = std::stoi(token.erase(token.find(';')));
+      } else if (epdLine && transitions.count(kEpdAcd) &&
+                 std::regex_match(token, std::regex("(0|[1-9]\\d*);"))) {
+        int nPlies;
+        std::istringstream(token) >> nPlies;
         int nMoves = (nPlies + 1) / 2;
         stipulation = {popeye::Help, {}, nMoves};
         if (nPlies % 2 == 1) {
@@ -450,11 +436,12 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         pieces = {};
         hasNextLine = true;
         transitions = {kEpdForsyth};
-      } else if (transitions.count(kEpdOpcode) && token == "dm") {
+      } else if (epdLine && transitions.count(kEpdOpcode) && token == "dm") {
         transitions = {kEpdDm};
-      } else if (transitions.count(kEpdDm) &&
-                 std::regex_match(token, std::regex("[1-9]\\d*;$"))) {
-        int nMoves = std::stoi(token.erase(token.find(';')));
+      } else if (epdLine && transitions.count(kEpdDm) &&
+                 std::regex_match(token, std::regex("[1-9]\\d*;"))) {
+        int nMoves;
+        std::istringstream(token) >> nMoves;
         stipulation = {popeye::Direct, {}, nMoves};
         if (colour == popeye::Black) {
           options.halfDuplex = true;
