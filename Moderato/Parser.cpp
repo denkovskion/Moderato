@@ -105,14 +105,11 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
     kEpdDm
   };
   std::set<Transition> transitions = {kPopeyeLanguage, kEpdForsyth};
-  enum Language { kEnglish = 1, kFrench, kGerman };
-  int inputLanguage = 0;
+  bool english = false;
   bool french = false;
   bool german = false;
   std::vector<popeye::Problem> problems;
-  popeye::Options options = {};
-  popeye::Stipulation stipulation = {};
-  std::vector<popeye::Piece> pieces;
+  popeye::Problem problem = {};
   popeye::Colour colour = {};
   bool hasNextLine = true;
   for (std::string line; hasNextLine && std::getline(input, line);) {
@@ -121,20 +118,18 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
     bool hasNextToken = true;
     for (std::string token; hasNextToken && tokenInput >> token;) {
       std::string popeyeToken;
-      for (unsigned char c : token) {
-        popeyeToken.push_back(std::tolower(c));
+      for (unsigned char symbol : token) {
+        popeyeToken.push_back(std::tolower(symbol));
       }
       if (transitions.count(kPopeyeLanguage) && popeyeToken == "beginproblem") {
-        inputLanguage = kEnglish;
+        english = true;
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeLanguage) &&
                  popeyeToken == "debutprobleme") {
-        inputLanguage = kFrench;
         french = true;
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeLanguage) &&
                  popeyeToken == "anfangproblem") {
-        inputLanguage = kGerman;
         german = true;
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeCommand) &&
@@ -149,7 +144,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken ==
                      (!german ? !french ? "try" : "essais" : "verfuehrung")) {
-        options.tri = true;
+        problem.options.tri = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "defence" : "defense"
@@ -158,38 +153,38 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
       } else if (transitions.count(kPopeyeDefence) &&
                  std::regex_match(popeyeToken, std::regex("[1-9]\\d*"))) {
         int defence = std::stoi(popeyeToken);
-        options.defence = defence;
+        problem.options.defence = defence;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "setplay" : "apparent"
                                          : "satzspiel")) {
-        options.setPlay = true;
+        problem.options.setPlay = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "nullmoves" : "coupsvides"
                                          : "nullzuege")) {
-        options.nullMoves = true;
+        problem.options.nullMoves = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german
                                      ? !french ? "whitetoplay" : "apparentseul"
                                      : "weissbeginnt")) {
-        options.whiteToPlay = true;
+        problem.options.whiteToPlay = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "variation" : "variantes"
                                          : "varianten")) {
-        options.variation = true;
+        problem.options.variation = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "movenumbers" : "trace"
                                          : "zugnummern")) {
-        options.moveNumbers = true;
+        problem.options.moveNumbers = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "nothreat" : "sansmenace"
                                          : "ohnedrohung")) {
-        options.noThreat = true;
+        problem.options.noThreat = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "enpassant" : "enpassant"
@@ -205,25 +200,25 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
               static_cast<popeye::File>(squareMatch.str()[0] - 'a');
           popeye::Rank rank =
               static_cast<popeye::Rank>(squareMatch.str()[1] - '1');
-          options.enPassant.push_back({file, rank});
+          problem.options.enPassant.push_back({file, rank});
           squaresSubsequence = squareMatch.suffix();
         };
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "noboard" : "sansechiquier"
                                          : "ohnebrett")) {
-        options.noBoard = true;
+        problem.options.noBoard = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "noshortvariations"
                                                    : "sansvariantescourtes"
                                          : "ohnekurzvarianten")) {
-        options.noShortVariations = true;
+        problem.options.noShortVariations = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "halfduplex" : "demiduplex"
                                          : "halbduplex")) {
-        options.halfDuplex = true;
+        problem.options.halfDuplex = true;
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeOption) &&
                  popeyeToken == (!german ? !french ? "nocastling" : "sansroquer"
@@ -238,7 +233,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
               static_cast<popeye::File>(squareMatch.str()[0] - 'a');
           popeye::Rank rank =
               static_cast<popeye::Rank>(squareMatch.str()[1] - '1');
-          options.noCastling.push_back({file, rank});
+          problem.options.noCastling.push_back({file, rank});
           squaresSubsequence = squareMatch.suffix();
         };
         transitions = {kPopeyeOption, kPopeyeCommand, kPopeyeDirective};
@@ -259,7 +254,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         popeye::Goal goal =
             stipulationMatch[2] == "=" ? popeye::Stalemate : popeye::Mate;
         int nMoves = std::stoi(stipulationMatch[3]);
-        stipulation = {stipulationType, goal, nMoves};
+        problem.stipulation = {stipulationType, goal, nMoves};
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeCommand) &&
                  popeyeToken ==
@@ -308,7 +303,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
           popeye::Rank rank =
               static_cast<popeye::Rank>(squareMatch.str()[1] - '1');
           popeye::Square square = {file, rank};
-          pieces.push_back({square, pieceType, colour});
+          problem.pieces.push_back({square, pieceType, colour});
           squaresSubsequence = squareMatch.suffix();
         };
         transitions = {kPopeyePiece, kPopeyeColour, kPopeyeCommand,
@@ -316,16 +311,14 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
       } else if (transitions.count(kPopeyeDirective) &&
                  popeyeToken == (!german ? !french ? "nextproblem" : "asuivre"
                                          : "weiteresproblem")) {
-        problems.push_back({options, stipulation, pieces});
-        options = {};
-        stipulation = {};
-        pieces = {};
+        problems.push_back(problem);
+        problem = {};
         transitions = {kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeDirective) &&
                  popeyeToken == (!german
                                      ? !french ? "endproblem" : "finprobleme"
                                      : "endeproblem")) {
-        problems.push_back({options, stipulation, pieces});
+        problems.push_back(problem);
         hasNextToken = false;
         hasNextLine = false;
         transitions = {};
@@ -356,7 +349,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                                               : popeye::King;
             popeye::Square square = {static_cast<popeye::File>(iFile),
                                      static_cast<popeye::Rank>(iRank)};
-            pieces.push_back({square, pieceType, colour});
+            problem.pieces.push_back({square, pieceType, colour});
             iFile++;
           } else if (std::isdigit(symbol)) {
             iFile += symbol - '0';
@@ -377,30 +370,30 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
       } else if (epdLine && transitions.count(kEpdCastling) &&
                  std::regex_match(token, std::regex("\\bK?Q?k?q?"))) {
         if (token.find('K') == std::string::npos) {
-          options.noCastling.push_back({popeye::_h, popeye::_1});
+          problem.options.noCastling.push_back({popeye::_h, popeye::_1});
         }
         if (token.find('Q') == std::string::npos) {
-          options.noCastling.push_back({popeye::_a, popeye::_1});
+          problem.options.noCastling.push_back({popeye::_a, popeye::_1});
         }
         if (token.find('K') == std::string::npos &&
             token.find('Q') == std::string::npos) {
-          options.noCastling.push_back({popeye::_e, popeye::_1});
+          problem.options.noCastling.push_back({popeye::_e, popeye::_1});
         }
         if (token.find('k') == std::string::npos) {
-          options.noCastling.push_back({popeye::_h, popeye::_8});
+          problem.options.noCastling.push_back({popeye::_h, popeye::_8});
         }
         if (token.find('q') == std::string::npos) {
-          options.noCastling.push_back({popeye::_a, popeye::_8});
+          problem.options.noCastling.push_back({popeye::_a, popeye::_8});
         }
         if (token.find('k') == std::string::npos &&
             token.find('q') == std::string::npos) {
-          options.noCastling.push_back({popeye::_e, popeye::_8});
+          problem.options.noCastling.push_back({popeye::_e, popeye::_8});
         }
         transitions = {kEpdEnPassant};
       } else if (epdLine && transitions.count(kEpdCastling) && token == "-") {
         for (const popeye::File& file : {popeye::_h, popeye::_a, popeye::_e}) {
           for (const popeye::Rank& rank : {popeye::_1, popeye::_8}) {
-            options.noCastling.push_back({file, rank});
+            problem.options.noCastling.push_back({file, rank});
           }
         }
         transitions = {kEpdEnPassant};
@@ -408,7 +401,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                  std::regex_match(token, std::regex("[a-h][36]"))) {
         popeye::File file = static_cast<popeye::File>(token[0] - 'a');
         popeye::Rank rank = static_cast<popeye::Rank>(token[1] - '1');
-        options.enPassant.push_back({file, rank});
+        problem.options.enPassant.push_back({file, rank});
         transitions = {kEpdOpcode};
       } else if (epdLine && transitions.count(kEpdEnPassant) && token == "-") {
         transitions = {kEpdOpcode};
@@ -419,21 +412,19 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         int nPlies;
         std::istringstream(token) >> nPlies;
         int nMoves = (nPlies + 1) / 2;
-        stipulation = {popeye::Help, {}, nMoves};
+        problem.stipulation = {popeye::Help, {}, nMoves};
         if (nPlies % 2 == 1) {
-          options.whiteToPlay = true;
+          problem.options.whiteToPlay = true;
           if (colour == popeye::Black) {
-            options.halfDuplex = true;
+            problem.options.halfDuplex = true;
           }
         } else {
           if (colour == popeye::White) {
-            options.halfDuplex = true;
+            problem.options.halfDuplex = true;
           }
         }
-        problems.push_back({options, stipulation, pieces});
-        options = {};
-        stipulation = {};
-        pieces = {};
+        problems.push_back(problem);
+        problem = {};
         hasNextLine = true;
         transitions = {kEpdForsyth};
       } else if (epdLine && transitions.count(kEpdOpcode) && token == "dm") {
@@ -442,14 +433,12 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                  std::regex_match(token, std::regex("[1-9]\\d*;"))) {
         int nMoves;
         std::istringstream(token) >> nMoves;
-        stipulation = {popeye::Direct, {}, nMoves};
+        problem.stipulation = {popeye::Direct, {}, nMoves};
         if (colour == popeye::Black) {
-          options.halfDuplex = true;
+          problem.options.halfDuplex = true;
         }
-        problems.push_back({options, stipulation, pieces});
-        options = {};
-        stipulation = {};
-        pieces = {};
+        problems.push_back(problem);
+        problem = {};
         hasNextLine = true;
         transitions = {kEpdForsyth};
       } else {
@@ -461,10 +450,11 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
   if (!transitions.empty() && !transitions.count(kEpdForsyth)) {
     throw std::invalid_argument("Parse failure (incomplete input).");
   }
-  for (const popeye::Problem& problem : problems) {
-    validateProblem(problem);
-    verifyProblem(problem);
-    convertProblem(problem, inputLanguage, tasks);
+  int inputLanguage = german ? 3 : french ? 2 : english ? 1 : 0;
+  for (const popeye::Problem& specification : problems) {
+    validateProblem(specification);
+    verifyProblem(specification);
+    convertProblem(specification, inputLanguage, tasks);
   }
   return input;
 }
