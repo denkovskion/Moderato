@@ -26,13 +26,12 @@
 
 namespace moderato {
 
-Piece::Piece(bool black, bool royal) : black_(black), royal_(royal) {}
+Piece::Piece(bool black) : black_(black) {}
 Piece::~Piece() {}
 bool Piece::isBlack() const { return black_; }
-bool Piece::isRoyal() const { return royal_; }
+bool Piece::isRoyal() const { return false; }
 std::ostream& operator<<(std::ostream& output, const Piece& piece) {
-  output << piece.getName() << "[black=" << piece.black_
-         << ", royal=" << piece.royal_ << "]";
+  output << piece.getName() << "[black=" << piece.black_ << "]";
   return output;
 }
 

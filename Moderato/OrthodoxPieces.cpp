@@ -28,18 +28,20 @@
 
 namespace moderato {
 
-King::King(bool black) : Piece(black, true) {}
-Queen::Queen(bool black) : Piece(black, false) {}
-Rook::Rook(bool black) : Piece(black, false) {}
-Bishop::Bishop(bool black) : Piece(black, false) {}
-Knight::Knight(bool black) : Piece(black, false) {}
-Pawn::Pawn(bool black) : Piece(black, false) {}
+King::King(bool black) : Piece(black) {}
+Queen::Queen(bool black) : Piece(black) {}
+Rook::Rook(bool black) : Piece(black) {}
+Bishop::Bishop(bool black) : Piece(black) {}
+Knight::Knight(bool black) : Piece(black) {}
+Pawn::Pawn(bool black) : Piece(black) {}
 
 bool King::isBlack() const { return Piece::isBlack(); }
 bool Queen::isBlack() const { return Piece::isBlack(); }
 bool Rook::isBlack() const { return Piece::isBlack(); }
 bool Bishop::isBlack() const { return Piece::isBlack(); }
 bool Knight::isBlack() const { return Piece::isBlack(); }
+
+bool King::isRoyal() const { return true; }
 
 int King::findRebirthSquare(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin) const {
@@ -66,7 +68,7 @@ int Knight::findRebirthSquare(
 }
 int Pawn::findRebirthSquare(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin) const {
-  return origin / 16 + (black_ ? 6 : 1);
+  return (origin / 16) * 16 + (black_ ? 6 : 1);
 }
 
 std::vector<int>& King::leaps(
@@ -271,6 +273,9 @@ bool Pawn::generateMoves(
           if (enPassant && target == *enPassant) {
             int stop = target + (black_ ? 1 : -1);
             moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
+            if (board.at(stop)->isRoyal()) {
+              return false;
+            }
           }
         }
       } else {

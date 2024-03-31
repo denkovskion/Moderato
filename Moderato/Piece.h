@@ -43,13 +43,12 @@ class Piece {
 
  protected:
   const bool black_;
-  const bool royal_;
-  Piece(bool black, bool royal);
+  Piece(bool black);
 
  public:
   virtual ~Piece();
   bool isBlack() const;
-  bool isRoyal() const;
+  virtual bool isRoyal() const;
   virtual int findRebirthSquare(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       int origin) const = 0;

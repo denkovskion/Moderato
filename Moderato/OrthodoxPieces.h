@@ -38,6 +38,7 @@ class King : public Piece, protected Leaper {
  public:
   King(bool black);
   bool isBlack() const override;
+  bool isRoyal() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
                         int square) const override;
   bool generateMoves(

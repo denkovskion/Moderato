@@ -30,7 +30,7 @@
 #include "Problem.h"
 
 int main(int argc, char* argv[]) {
-  std::cout << "Moderato 1.0.1"
+  std::cout << "Moderato [develop]"
 #if _MSC_VER
 #if _WIN64
             << " (x64)"
