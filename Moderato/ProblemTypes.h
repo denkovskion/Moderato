@@ -41,7 +41,7 @@ class MateProblem : virtual public Problem {
   MateProblem(bool stalemate);
 };
 
-class BattleMatePlay {
+class BattlePlay {
   void analyseMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
@@ -77,7 +77,7 @@ class BattleMatePlay {
              bool logMoves);
 };
 
-class Directmate : public MateProblem, protected BattleMatePlay {
+class Directmate : public MateProblem, protected BattlePlay {
   int searchMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;
@@ -93,7 +93,7 @@ class Directmate : public MateProblem, protected BattleMatePlay {
              const DisplayOptions& displayOptions) override;
 };
 
-class Selfmate : public MateProblem, protected BattleMatePlay {
+class Selfmate : public MateProblem, protected BattlePlay {
   int searchMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;

@@ -128,17 +128,14 @@ bool Position::isTerminal() {
       }
     }
   }
-  bool terminal = true;
   for (const std::shared_ptr<Move>& move : pseudoLegalMoves) {
-    if (move->make(*this)) {
-      terminal = false;
-    }
+    bool result = move->make(*this);
     move->unmake(*this);
-    if (!terminal) {
-      break;
+    if (result) {
+      return false;
     }
   }
-  return terminal;
+  return true;
 }
 
 std::ostream& operator<<(std::ostream& output, const Position& position) {

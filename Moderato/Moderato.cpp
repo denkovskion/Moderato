@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
       tasks.clear();
     }
     std::clog << std::boolalpha;
-    for (moderato::Task& task : tasks) {
+    for (const moderato::Task& task : tasks) {
       moderato::solve(task);
     }
   } catch (const std::exception& error) {

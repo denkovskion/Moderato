@@ -38,10 +38,10 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::unique_ptr<Piece>& piece = board.at(target);
       if (piece) {
         if (piece->isBlack() != isBlack()) {
-          moves.push_back(std::make_shared<Capture>(origin, target));
           if (piece->isRoyal()) {
             return false;
           }
+          moves.push_back(std::make_shared<Capture>(origin, target));
         }
       } else {
         moves.push_back(std::make_shared<QuietMove>(origin, target));
@@ -81,10 +81,10 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
         const std::unique_ptr<Piece>& piece = board.at(target);
         if (piece) {
           if (piece->isBlack() != isBlack()) {
-            moves.push_back(std::make_shared<Capture>(origin, target));
             if (piece->isRoyal()) {
               return false;
             }
+            moves.push_back(std::make_shared<Capture>(origin, target));
           }
           break;
         } else {

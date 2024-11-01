@@ -127,7 +127,7 @@ toMapped(const std::vector<std::deque<std::pair<Play, std::string>>>& lines) {
     if (iBranch == branches.end()) {
       if (iLine->size() == 1) {
         branches.push_back({iLine->front(), {}});
-      } else {
+      } else if (iLine->size() > 1) {
         branches.push_back(
             {iLine->front(), {{std::next(iLine->cbegin()), iLine->end()}}});
       }

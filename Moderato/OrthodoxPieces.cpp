@@ -251,6 +251,9 @@ bool Pawn::generateMoves(
         const std::unique_ptr<Piece>& piece = board.at(target);
         if (piece) {
           if (piece->isBlack() != black_) {
+            if (piece->isRoyal()) {
+              return false;
+            }
             if (origin % 16 == (black_ ? 1 : 6)) {
               const std::map<int, std::deque<std::unique_ptr<Piece>>>&
                   promotions = box.at(black_);
@@ -264,18 +267,15 @@ bool Pawn::generateMoves(
             } else {
               moves.push_back(std::make_shared<Capture>(origin, target));
             }
-            if (piece->isRoyal()) {
-              return false;
-            }
           }
         } else {
           const std::shared_ptr<int>& enPassant = state.second;
           if (enPassant && target == *enPassant) {
             int stop = target + (black_ ? 1 : -1);
-            moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
             if (board.at(stop)->isRoyal()) {
               return false;
             }
+            moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
           }
         }
       } else {
@@ -292,7 +292,7 @@ bool Pawn::generateMoves(
           } else {
             moves.push_back(std::make_shared<QuietMove>(origin, target));
             if (origin % 16 == (black_ ? 6 : 1)) {
-              target += direction;
+              target = origin + 2 * direction;
               if (!board.at(target)) {
                 int stop = origin + direction;
                 moves.push_back(
@@ -320,6 +320,14 @@ bool Pawn::generateMoves(
       if (piece) {
         if (piece->isBlack() != black_) {
           if (piece->isRoyal()) {
+            return false;
+          }
+        }
+      } else {
+        const std::shared_ptr<int>& enPassant = state.second;
+        if (enPassant && target == *enPassant) {
+          int stop = target + (black_ ? 1 : -1);
+          if (board.at(stop)->isRoyal()) {
             return false;
           }
         }

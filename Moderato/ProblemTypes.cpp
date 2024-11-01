@@ -35,11 +35,11 @@ HelpProblem::HelpProblem(bool halfMove) : halfMove_(halfMove) {}
 
 MateProblem::MateProblem(bool stalemate) : stalemate_(stalemate) {}
 
-void BattleMatePlay::solve(Position& position, bool stalemate, int nMoves,
-                           bool includeSetPlay, int includeTries,
-                           bool includeVariations, bool includeThreats,
-                           bool includeShortVariations, int translate,
-                           bool logMoves) {
+void BattlePlay::solve(Position& position, bool stalemate, int nMoves,
+                       bool includeSetPlay, int includeTries,
+                       bool includeVariations, bool includeThreats,
+                       bool includeShortVariations, int translate,
+                       bool logMoves) {
   std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
@@ -63,7 +63,7 @@ void BattleMatePlay::solve(Position& position, bool stalemate, int nMoves,
     }
   }
 }
-void BattleMatePlay::analyseMax(
+void BattlePlay::analyseMax(
     Position& position, bool stalemate, int depth,
     const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
     std::vector<std::pair<
@@ -158,7 +158,7 @@ void BattleMatePlay::analyseMax(
     }
   }
 }
-void BattleMatePlay::analyseMin(
+void BattlePlay::analyseMin(
     Position& position, bool stalemate, int depth,
     const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
     std::vector<std::pair<
@@ -231,11 +231,11 @@ Directmate::Directmate(Position position, bool stalemate, int nMoves)
     : Problem(std::move(position), nMoves), MateProblem(stalemate) {}
 void Directmate::solve(const AnalysisOptions& analysisOptions,
                        const DisplayOptions& displayOptions) {
-  BattleMatePlay::solve(
-      position_, stalemate_, nMoves_, analysisOptions.setPlay,
-      analysisOptions.nRefutations, analysisOptions.variations,
-      analysisOptions.threats, analysisOptions.shortVariations,
-      displayOptions.outputLanguage, displayOptions.internalProgress);
+  BattlePlay::solve(position_, stalemate_, nMoves_, analysisOptions.setPlay,
+                    analysisOptions.nRefutations, analysisOptions.variations,
+                    analysisOptions.threats, analysisOptions.shortVariations,
+                    displayOptions.outputLanguage,
+                    displayOptions.internalProgress);
 }
 int Directmate::searchMax(
     Position& position, bool stalemate, int depth,
@@ -324,11 +324,11 @@ Selfmate::Selfmate(Position position, bool stalemate, int nMoves)
     : Problem(std::move(position), nMoves), MateProblem(stalemate) {}
 void Selfmate::solve(const AnalysisOptions& analysisOptions,
                      const DisplayOptions& displayOptions) {
-  BattleMatePlay::solve(
-      position_, stalemate_, nMoves_, analysisOptions.setPlay,
-      analysisOptions.nRefutations, analysisOptions.variations,
-      analysisOptions.threats, analysisOptions.shortVariations,
-      displayOptions.outputLanguage, displayOptions.internalProgress);
+  BattlePlay::solve(position_, stalemate_, nMoves_, analysisOptions.setPlay,
+                    analysisOptions.nRefutations, analysisOptions.variations,
+                    analysisOptions.threats, analysisOptions.shortVariations,
+                    displayOptions.outputLanguage,
+                    displayOptions.internalProgress);
 }
 int Selfmate::searchMax(
     Position& position, bool stalemate, int depth,
@@ -566,8 +566,10 @@ void Helpmate::analyseMin(
     }
   }
   if (nLegalMoves == 0) {
-    if (evaluateTerminalNode(position, stalemate)) {
-      lines.push_back(line);
+    if (includeActualPlay) {
+      if (evaluateTerminalNode(position, stalemate)) {
+        lines.push_back(line);
+      }
     }
   }
 }
