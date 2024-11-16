@@ -54,35 +54,9 @@ void QuietMove::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
   board[origin_] = std::move(board[target_]);
 }
-void QuietMove::updateState(Position& position) const {
-  updateState(position.getBoard(), position.isBlackToMove(),
-              position.getState(), position.getMemory());
-}
-void QuietMove::updateState(
-    const std::array<std::unique_ptr<Piece>, 128>& board, bool& blackToMove,
-    std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& memory) const {
-  memory.push(state);
-  addNoCastling(board, state.first);
-  setEnPassant(board, state.second);
-  blackToMove = !blackToMove;
-}
-void QuietMove::addNoCastling(
-    const std::array<std::unique_ptr<Piece>, 128>& board,
-    std::set<int>& noCastling) const {
-  for (int square : {origin_, target_}) {
-    for (int castling : {64, 0, 112, 71, 7, 119}) {
-      if (square == castling) {
-        noCastling.insert(square);
-        break;
-      }
-    }
-  }
-}
-void QuietMove::setEnPassant(
-    const std::array<std::unique_ptr<Piece>, 128>& board,
-    std::shared_ptr<int>& enPassant) const {
-  enPassant.reset();
+void QuietMove::removeCastlings(std::set<int>& castlings) const {
+  castlings.erase(origin_);
+  castlings.erase(target_);
 }
 void QuietMove::preWrite(Position& position, std::ostream& lanBuilder,
                          int translate) const {
@@ -168,11 +142,9 @@ void Castling::revertPieces(
   board[origin2_] = std::move(board[target2_]);
   board[origin_] = std::move(board[target_]);
 }
-void Castling::addNoCastling(
-    const std::array<std::unique_ptr<Piece>, 128>& board,
-    std::set<int>& noCastling) const {
-  noCastling.insert(origin_);
-  noCastling.insert(origin2_);
+void Castling::removeCastlings(std::set<int>& castlings) const {
+  castlings.erase(origin_);
+  castlings.erase(origin2_);
 }
 
 LongCastling::LongCastling(int origin, int target, int origin2, int target2)
@@ -220,9 +192,7 @@ void DoubleStep::write(std::ostream& output) const {
   output << "DoubleStep[origin=" << origin_ << ", target=" << target_
          << ", stop=" << stop_ << "]";
 }
-void DoubleStep::setEnPassant(
-    const std::array<std::unique_ptr<Piece>, 128>& board,
-    std::shared_ptr<int>& enPassant) const {
+void DoubleStep::setEnPassant(std::shared_ptr<int>& enPassant) const {
   enPassant = std::make_shared<int>(stop_);
 }
 

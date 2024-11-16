@@ -86,43 +86,39 @@ bool King::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  bool result = Leaper::generateMoves(board, origin, moves);
-  if (result) {
-    const std::set<int>& noCastling = state.first;
-    if (findRebirthSquare(board, origin) == origin &&
-        !noCastling.count(origin)) {
-      for (int direction : {-16, 16}) {
-        int distance = 1;
-        while (true) {
-          int origin2 = origin + distance * direction;
-          if (!(origin2 & 136)) {
-            const std::unique_ptr<Piece>& piece2 = board.at(origin2);
-            if (piece2) {
-              if (origin2 / 16 == (direction > 0 ? 7 : 0) &&
-                  piece2->findRebirthSquare(board, origin2) == origin2 &&
-                  !noCastling.count(origin2)) {
-                int target = origin + 2 * direction;
-                int target2 = origin + direction;
-                if (direction > 0) {
-                  moves.push_back(std::make_shared<ShortCastling>(
-                      origin, target, origin2, target2));
-                } else {
-                  moves.push_back(std::make_shared<LongCastling>(
-                      origin, target, origin2, target2));
-                }
-              }
-              break;
+  if (!Leaper::generateMoves(board, origin, moves)) {
+    return false;
+  }
+  const std::set<int>& castlings = state.first;
+  if (origin == (black_ ? 71 : 64) && castlings.count(origin)) {
+    for (int direction : {-16, 16}) {
+      int distance = 1;
+      while (true) {
+        int origin2 = origin + distance * direction;
+        if (!(origin2 & 136)) {
+          if (castlings.count(origin2)) {
+            int target = origin + 2 * direction;
+            int target2 = origin + direction;
+            if (direction > 0) {
+              moves.push_back(std::make_shared<ShortCastling>(
+                  origin, target, origin2, target2));
             } else {
-              distance++;
+              moves.push_back(std::make_shared<LongCastling>(origin, target,
+                                                             origin2, target2));
             }
-          } else {
             break;
+          } else if (board.at(origin2)) {
+            break;
+          } else {
+            distance++;
           }
+        } else {
+          break;
         }
       }
     }
   }
-  return result;
+  return true;
 }
 bool King::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,

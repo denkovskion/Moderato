@@ -636,10 +636,32 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
                                specification.options.whiteToPlay
                          : specification.options.halfDuplex;
   std::pair<std::set<int>, std::shared_ptr<int>> state;
-  for (const popeye::Square& origin : specification.options.noCastling) {
-    int square = 16 * origin.file + origin.rank;
-    state.first.insert(square);
-  }
+  std::set<std::pair<popeye::File, popeye::Rank>> origins;
+  std::for_each(
+      specification.pieces.crbegin(), specification.pieces.crend(),
+      [&specification, &origins, &state](const popeye::Piece& piece) {
+        if (origins.insert({piece.square.file, piece.square.rank}).second) {
+          if ((piece.pieceType == popeye::King &&
+                   piece.square.file == popeye::_e ||
+               piece.pieceType == popeye::Rook &&
+                   (piece.square.file == popeye::_a ||
+                    piece.square.file == popeye::_h)) &&
+              (piece.colour == popeye::White &&
+                   piece.square.rank == popeye::_1 ||
+               piece.colour == popeye::Black &&
+                   piece.square.rank == popeye::_8)) {
+            if (std::find_if(specification.options.noCastling.cbegin(),
+                             specification.options.noCastling.cend(),
+                             [&piece](const popeye::Square& origin) {
+                               return origin.file == piece.square.file &&
+                                      origin.rank == piece.square.rank;
+                             }) == specification.options.noCastling.cend()) {
+              int square = 16 * piece.square.file + piece.square.rank;
+              state.first.insert(square);
+            }
+          }
+        }
+      });
   for (const popeye::Square& target : specification.options.enPassant) {
     int square = 16 * target.file + target.rank;
     state.second = std::make_shared<int>(square);

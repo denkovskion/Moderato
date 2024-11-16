@@ -75,8 +75,13 @@ void NullMove::updateState(
     bool& blackToMove, std::pair<std::set<int>, std::shared_ptr<int>>& state,
     std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& memory) const {
   memory.push(state);
-  state.second.reset();
+  removeCastlings(state.first);
+  setEnPassant(state.second);
   blackToMove = !blackToMove;
+}
+void NullMove::removeCastlings(std::set<int>& castlings) const {}
+void NullMove::setEnPassant(std::shared_ptr<int>& enPassant) const {
+  enPassant.reset();
 }
 void NullMove::revertState(Position& position) const {
   revertState(position.isBlackToMove(), position.getState(),
