@@ -45,22 +45,22 @@ class BattlePlay {
   void analyseMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
-      std::vector<std::pair<
-          std::pair<Play, std::shared_ptr<Move>>,
-          std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>&
+      std::vector<
+          std::pair<std::pair<Play, std::string>,
+                    std::vector<std::deque<std::pair<Play, std::string>>>>>&
           branches,
-      bool includeVariations, bool includeThreats, bool includeShortVariations,
-      bool includeSetPlay, int includeTries, bool includeActualPlay,
-      bool markKeys, bool logMoves);
+      int translate, bool includeVariations, bool includeThreats,
+      bool includeShortVariations, bool includeSetPlay, int includeTries,
+      bool includeActualPlay, bool markKeys, bool logMoves);
   void analyseMin(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
-      std::vector<std::pair<
-          std::pair<Play, std::shared_ptr<Move>>,
-          std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>&
+      std::vector<
+          std::pair<std::pair<Play, std::string>,
+                    std::vector<std::deque<std::pair<Play, std::string>>>>>&
           branches,
-      bool includeVariations, bool includeThreats, bool includeShortVariations,
-      bool includeSetPlay);
+      int translate, bool includeVariations, bool includeThreats,
+      bool includeShortVariations, bool includeSetPlay);
   virtual int searchMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) = 0;
@@ -77,7 +77,7 @@ class BattlePlay {
              bool logMoves);
 };
 
-class Directmate : public MateProblem, protected BattlePlay {
+class Directmate : public MateProblem, private BattlePlay {
   int searchMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;
@@ -93,7 +93,7 @@ class Directmate : public MateProblem, protected BattlePlay {
              const DisplayOptions& displayOptions) override;
 };
 
-class Selfmate : public MateProblem, protected BattlePlay {
+class Selfmate : public MateProblem, private BattlePlay {
   int searchMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;

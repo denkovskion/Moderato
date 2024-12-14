@@ -30,7 +30,6 @@
 namespace moderato {
 
 class QuietMove : public NullMove {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void updatePieces(Position& position) const override;
   virtual void updatePieces(
@@ -43,7 +42,10 @@ class QuietMove : public NullMove {
                 int translate) const override;
   virtual void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                         std::ostream& lanBuilder, int translate) const;
-  void postWrite(Position& position, std::ostream& lanBuilder) const override;
+  void postWrite(
+      Position& position,
+      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+      std::ostream& lanBuilder) const override;
 
  protected:
   const int origin_;
@@ -54,7 +56,6 @@ class QuietMove : public NullMove {
 };
 
 class Capture : public QuietMove {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void updatePieces(Position& position) const override;
   virtual void updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
@@ -84,7 +85,6 @@ class Castling : public QuietMove {
 };
 
 class LongCastling : public Castling {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
@@ -94,7 +94,6 @@ class LongCastling : public Castling {
 };
 
 class ShortCastling : public Castling {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
@@ -104,7 +103,6 @@ class ShortCastling : public Castling {
 };
 
 class DoubleStep : public QuietMove {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void setEnPassant(std::shared_ptr<int>& enPassant) const override;
   const int stop_;
@@ -114,7 +112,6 @@ class DoubleStep : public QuietMove {
 };
 
 class EnPassant : public Capture {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
@@ -129,7 +126,6 @@ class EnPassant : public Capture {
 };
 
 class Promotion : public QuietMove {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void updatePieces(Position& position) const override;
   void updatePieces(
@@ -158,7 +154,6 @@ class Promotion : public QuietMove {
 };
 
 class PromotionCapture : public Promotion {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   void updatePieces(Position& position) const override;
   void updatePieces(

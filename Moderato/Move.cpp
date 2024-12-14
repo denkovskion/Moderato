@@ -28,12 +28,20 @@
 
 namespace moderato {
 
-bool Move::operator==(const Move& other) const {
-  return typeid(*this) == typeid(other) && equals(other);
-}
 std::ostream& operator<<(std::ostream& output, const Move& move) {
   move.write(output);
   return output;
+}
+bool Move::make(Position& position,
+                std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+                std::ostream& lanBuilder, int translate) const {
+  preWrite(position, lanBuilder, translate);
+  bool result = preMake(position);
+  updatePieces(position);
+  updateState(position);
+  result = position.isLegal(pseudoLegalMoves) && result;
+  postWrite(position, pseudoLegalMoves, lanBuilder);
+  return result;
 }
 bool Move::make(Position& position,
                 std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const {
@@ -48,21 +56,11 @@ bool Move::make(Position& position) const {
   updateState(position);
   return position.isLegal() && result;
 }
-void Move::make(Position& position, std::ostream& lanBuilder,
-                int translate) const {
-  preWrite(position, lanBuilder, translate);
-  updatePieces(position);
-  updateState(position);
-  postWrite(position, lanBuilder);
-}
 void Move::unmake(Position& position) const {
   revertState(position);
   revertPieces(position);
 }
 
-bool NullMove::equals(const Move& other) const {
-  return typeid(*this) == typeid(static_cast<const NullMove&>(other));
-}
 void NullMove::write(std::ostream& output) const { output << "NullMove[]"; }
 bool NullMove::preMake(Position& position) const { return true; }
 void NullMove::updatePieces(Position& position) const {}
@@ -98,6 +96,9 @@ void NullMove::preWrite(Position& position, std::ostream& lanBuilder,
                         int translate) const {
   lanBuilder << "null";
 }
-void NullMove::postWrite(Position& position, std::ostream& lanBuilder) const {}
+void NullMove::postWrite(
+    Position& position,
+    const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+    std::ostream& lanBuilder) const {}
 
 }  // namespace moderato

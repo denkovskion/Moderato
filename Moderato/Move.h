@@ -36,7 +36,6 @@ namespace moderato {
 class Position;
 
 class Move {
-  virtual bool equals(const Move& other) const = 0;
   virtual void write(std::ostream& output) const = 0;
   virtual bool preMake(Position& position) const = 0;
   virtual void updatePieces(Position& position) const = 0;
@@ -45,21 +44,23 @@ class Move {
   virtual void revertState(Position& position) const = 0;
   virtual void preWrite(Position& position, std::ostream& lanBuilder,
                         int translate) const = 0;
-  virtual void postWrite(Position& position,
-                         std::ostream& lanBuilder) const = 0;
+  virtual void postWrite(
+      Position& position,
+      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+      std::ostream& lanBuilder) const = 0;
 
  public:
-  bool operator==(const Move& other) const;
   friend std::ostream& operator<<(std::ostream& output, const Move& move);
+  bool make(Position& position,
+            std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+            std::ostream& lanBuilder, int translate) const;
   bool make(Position& position,
             std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const;
   bool make(Position& position) const;
-  void make(Position& position, std::ostream& lanBuilder, int translate) const;
   void unmake(Position& position) const;
 };
 
 class NullMove : public Move {
-  bool equals(const Move& other) const override;
   void write(std::ostream& output) const override;
   bool preMake(Position& position) const override;
   void updatePieces(Position& position) const override;
@@ -76,7 +77,10 @@ class NullMove : public Move {
       std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& memory) const;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
-  void postWrite(Position& position, std::ostream& lanBuilder) const override;
+  void postWrite(
+      Position& position,
+      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+      std::ostream& lanBuilder) const override;
 };
 
 }  // namespace moderato

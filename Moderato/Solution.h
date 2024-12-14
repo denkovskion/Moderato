@@ -50,13 +50,10 @@ enum class Play {
   HELP_2ND
 };
 
-bool operator==(const std::pair<Play, std::shared_ptr<Move>>& point1,
-                const std::pair<Play, std::shared_ptr<Move>>& point2);
-
-std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> toFlattened(
-    const std::vector<std::pair<
-        std::pair<Play, std::shared_ptr<Move>>,
-        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>&
+std::vector<std::deque<std::pair<Play, std::string>>> toFlattened(
+    const std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>&
         branches);
 
 std::vector<std::deque<std::pair<Play, std::string>>> toTransformed(
@@ -67,11 +64,7 @@ std::vector<std::deque<std::pair<Play, std::string>>> toTransformed(
 std::string toFormatted(
     const std::vector<std::deque<std::pair<Play, std::string>>>& lines);
 
-std::vector<std::pair<std::string, std::string>> toTransformed(
-    const std::vector<std::pair<std::string, std::shared_ptr<Move>>>& points,
-    Position& position, int translate);
-
-std::string toFormatted(
+std::string toOrderedAndFormatted(
     const std::vector<std::pair<std::string, std::string>>& points);
 
 }  // namespace moderato

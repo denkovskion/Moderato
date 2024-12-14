@@ -33,10 +33,6 @@ std::string toCode(const std::array<std::unique_ptr<Piece>, 128>& board,
 
 QuietMove::QuietMove(int origin, int target)
     : origin_(origin), target_(target) {}
-bool QuietMove::equals(const Move& other) const {
-  return origin_ == static_cast<const QuietMove&>(other).origin_ &&
-         target_ == static_cast<const QuietMove&>(other).target_;
-}
 void QuietMove::write(std::ostream& output) const {
   output << "QuietMove[origin=" << origin_ << ", target=" << target_ << "]";
 }
@@ -67,9 +63,12 @@ void QuietMove::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
   lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
              << "-" << toCode(board, target_);
 }
-void QuietMove::postWrite(Position& position, std::ostream& lanBuilder) const {
+void QuietMove::postWrite(
+    Position& position,
+    const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+    std::ostream& lanBuilder) const {
   int nChecks = position.isCheck();
-  bool terminal = position.isTerminal();
+  bool terminal = position.isTerminal(generatedPseudoLegalMoves);
   if (terminal) {
     if (nChecks > 0) {
       if (nChecks > 1) {
@@ -91,10 +90,6 @@ void QuietMove::postWrite(Position& position, std::ostream& lanBuilder) const {
 }
 
 Capture::Capture(int origin, int target) : QuietMove(origin, target) {}
-bool Capture::equals(const Move& other) const {
-  return origin_ == static_cast<const Capture&>(other).origin_ &&
-         target_ == static_cast<const Capture&>(other).target_;
-}
 void Capture::write(std::ostream& output) const {
   output << "Capture[origin=" << origin_ << ", target=" << target_ << "]";
 }
@@ -149,12 +144,6 @@ void Castling::removeCastlings(std::set<int>& castlings) const {
 
 LongCastling::LongCastling(int origin, int target, int origin2, int target2)
     : Castling(origin, target, origin2, target2) {}
-bool LongCastling::equals(const Move& other) const {
-  return origin_ == static_cast<const LongCastling&>(other).origin_ &&
-         target_ == static_cast<const LongCastling&>(other).target_ &&
-         origin2_ == static_cast<const LongCastling&>(other).origin2_ &&
-         target2_ == static_cast<const LongCastling&>(other).target2_;
-}
 void LongCastling::write(std::ostream& output) const {
   output << "LongCastling[origin=" << origin_ << ", target=" << target_
          << ", origin2=" << origin2_ << ", target2=" << target2_ << "]";
@@ -166,12 +155,6 @@ void LongCastling::preWrite(Position& position, std::ostream& lanBuilder,
 
 ShortCastling::ShortCastling(int origin, int target, int origin2, int target2)
     : Castling(origin, target, origin2, target2) {}
-bool ShortCastling::equals(const Move& other) const {
-  return origin_ == static_cast<const ShortCastling&>(other).origin_ &&
-         target_ == static_cast<const ShortCastling&>(other).target_ &&
-         origin2_ == static_cast<const ShortCastling&>(other).origin2_ &&
-         target2_ == static_cast<const ShortCastling&>(other).target2_;
-}
 void ShortCastling::write(std::ostream& output) const {
   output << "ShortCastling[origin=" << origin_ << ", target=" << target_
          << ", origin2=" << origin2_ << ", target2=" << target2_ << "]";
@@ -183,11 +166,6 @@ void ShortCastling::preWrite(Position& position, std::ostream& lanBuilder,
 
 DoubleStep::DoubleStep(int origin, int target, int stop)
     : QuietMove(origin, target), stop_(stop) {}
-bool DoubleStep::equals(const Move& other) const {
-  return origin_ == static_cast<const DoubleStep&>(other).origin_ &&
-         target_ == static_cast<const DoubleStep&>(other).target_ &&
-         stop_ == static_cast<const DoubleStep&>(other).stop_;
-}
 void DoubleStep::write(std::ostream& output) const {
   output << "DoubleStep[origin=" << origin_ << ", target=" << target_
          << ", stop=" << stop_ << "]";
@@ -198,11 +176,6 @@ void DoubleStep::setEnPassant(std::shared_ptr<int>& enPassant) const {
 
 EnPassant::EnPassant(int origin, int target, int stop)
     : Capture(origin, target), stop_(stop) {}
-bool EnPassant::equals(const Move& other) const {
-  return origin_ == static_cast<const EnPassant&>(other).origin_ &&
-         target_ == static_cast<const EnPassant&>(other).target_ &&
-         stop_ == static_cast<const EnPassant&>(other).stop_;
-}
 void EnPassant::write(std::ostream& output) const {
   output << "EnPassant[origin=" << origin_ << ", target=" << target_
          << ", stop=" << stop_ << "]";
@@ -226,12 +199,6 @@ void EnPassant::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
 
 Promotion::Promotion(int origin, int target, bool black, int order)
     : QuietMove(origin, target), black_(black), order_(order) {}
-bool Promotion::equals(const Move& other) const {
-  return origin_ == static_cast<const Promotion&>(other).origin_ &&
-         target_ == static_cast<const Promotion&>(other).target_ &&
-         black_ == static_cast<const Promotion&>(other).black_ &&
-         order_ == static_cast<const Promotion&>(other).order_;
-}
 void Promotion::write(std::ostream& output) const {
   output << "Promotion[origin=" << origin_ << ", target=" << target_
          << ", black=" << black_ << ", order=" << order_ << "]";
@@ -275,12 +242,6 @@ void Promotion::preWrite(
 PromotionCapture::PromotionCapture(int origin, int target, bool black,
                                    int order)
     : Promotion(origin, target, black, order) {}
-bool PromotionCapture::equals(const Move& other) const {
-  return origin_ == static_cast<const PromotionCapture&>(other).origin_ &&
-         target_ == static_cast<const PromotionCapture&>(other).target_ &&
-         black_ == static_cast<const PromotionCapture&>(other).black_ &&
-         order_ == static_cast<const PromotionCapture&>(other).order_;
-}
 void PromotionCapture::write(std::ostream& output) const {
   output << "PromotionCapture[origin=" << origin_ << ", target=" << target_
          << ", black=" << black_ << ", order=" << order_ << "]";

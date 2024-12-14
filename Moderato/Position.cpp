@@ -118,17 +118,9 @@ int Position::isCheck() {
   memory_.pop();
   return nChecks;
 }
-bool Position::isTerminal() {
-  std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
-  for (int square = 0; square < 128; square++) {
-    if (!(square & 136)) {
-      const std::unique_ptr<Piece>& piece = board_[square];
-      if (piece && piece->isBlack() == blackToMove_) {
-        piece->generateMoves(board_, box_, state_, square, pseudoLegalMoves);
-      }
-    }
-  }
-  for (const std::shared_ptr<Move>& move : pseudoLegalMoves) {
+bool Position::isTerminal(
+    const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves) {
+  for (const std::shared_ptr<Move>& move : generatedPseudoLegalMoves) {
     bool result = move->make(*this);
     move->unmake(*this);
     if (result) {

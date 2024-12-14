@@ -60,17 +60,12 @@ void write(
         branch,
     int moveNo, bool newline, bool tab, bool space, std::ostream& output);
 
-bool operator==(const std::pair<Play, std::shared_ptr<Move>>& point1,
-                const std::pair<Play, std::shared_ptr<Move>>& point2) {
-  return point1.first == point2.first && *point1.second == *point2.second;
-}
-
-std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> toFlattened(
-    const std::vector<std::pair<
-        std::pair<Play, std::shared_ptr<Move>>,
-        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>&
+std::vector<std::deque<std::pair<Play, std::string>>> toFlattened(
+    const std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>&
         branches) {
-  std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> lines;
+  std::vector<std::deque<std::pair<Play, std::string>>> lines;
   for (auto iBranch = branches.cbegin(); iBranch != branches.cend();
        iBranch++) {
     if (iBranch->second.empty()) {
@@ -78,7 +73,7 @@ std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> toFlattened(
     } else {
       for (auto iLine = iBranch->second.cbegin();
            iLine != iBranch->second.cend(); iLine++) {
-        std::deque<std::pair<Play, std::shared_ptr<Move>>> line = *iLine;
+        std::deque<std::pair<Play, std::string>> line = *iLine;
         line.push_front(iBranch->first);
         lines.push_back(line);
       }
@@ -95,8 +90,9 @@ std::vector<std::deque<std::pair<Play, std::string>>> toTransformed(
   for (auto iLine = lines.cbegin(); iLine != lines.cend(); iLine++) {
     std::deque<std::pair<Play, std::string>> result;
     for (auto iPoint = iLine->cbegin(); iPoint != iLine->cend(); iPoint++) {
+      std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
       std::ostringstream lanBuilder;
-      iPoint->second->make(position, lanBuilder, translate);
+      iPoint->second->make(position, pseudoLegalMoves, lanBuilder, translate);
       result.push_back({iPoint->first, lanBuilder.str()});
     }
     for (auto iPoint = iLine->crbegin(); iPoint != iLine->crend(); iPoint++) {
@@ -256,20 +252,7 @@ void write(
   }
 }
 
-std::vector<std::pair<std::string, std::string>> toTransformed(
-    const std::vector<std::pair<std::string, std::shared_ptr<Move>>>& points,
-    Position& position, int translate) {
-  std::vector<std::pair<std::string, std::string>> results;
-  for (auto iPoint = points.cbegin(); iPoint != points.cend(); iPoint++) {
-    std::ostringstream lanBuilder;
-    iPoint->second->make(position, lanBuilder, translate);
-    results.push_back({iPoint->first, lanBuilder.str()});
-    iPoint->second->unmake(position);
-  }
-  return results;
-}
-
-std::string toFormatted(
+std::string toOrderedAndFormatted(
     const std::vector<std::pair<std::string, std::string>>& points) {
   std::vector<std::pair<std::string, std::string>> results = points;
   std::sort(results.begin(), results.end());

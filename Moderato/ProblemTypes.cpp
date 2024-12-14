@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 
 #include "Move.h"
 
@@ -43,17 +44,15 @@ void BattlePlay::solve(Position& position, bool stalemate, int nMoves,
   std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
-    std::vector<std::pair<
-        std::pair<Play, std::shared_ptr<Move>>,
-        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>
         branches;
     analyseMax(position, stalemate, nMoves, pseudoLegalMoves, branches,
-               includeVariations, includeThreats, includeShortVariations,
-               includeSetPlay, includeTries, includeActualPlay,
-               includeActualPlay, logMoves);
-    std::cout << toFormatted(
-                     toTransformed(toFlattened(branches), position, translate))
-              << std::endl;
+               translate, includeVariations, includeThreats,
+               includeShortVariations, includeSetPlay, includeTries,
+               includeActualPlay, includeActualPlay, logMoves);
+    std::cout << toFormatted(toFlattened(branches)) << std::endl;
   }
   if (!includeActualPlay) {
     if (includeSetPlay) {
@@ -66,32 +65,32 @@ void BattlePlay::solve(Position& position, bool stalemate, int nMoves,
 void BattlePlay::analyseMax(
     Position& position, bool stalemate, int depth,
     const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
-    std::vector<std::pair<
-        std::pair<Play, std::shared_ptr<Move>>,
-        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>&
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>&
         branches,
-    bool includeVariations, bool includeThreats, bool includeShortVariations,
-    bool includeSetPlay, int includeTries, bool includeActualPlay,
-    bool markKeys, bool logMoves) {
+    int translate, bool includeVariations, bool includeThreats,
+    bool includeShortVariations, bool includeSetPlay, int includeTries,
+    bool includeActualPlay, bool markKeys, bool logMoves) {
   if (includeSetPlay && !(depth == getTerminalDepth())) {
     std::shared_ptr<Move> move = std::make_shared<NullMove>();
     std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
     if (move->make(position, pseudoLegalMovesMin)) {
       int score = searchMin(position, stalemate, depth, pseudoLegalMovesMin, 0);
-      std::vector<std::pair<
-          std::pair<Play, std::shared_ptr<Move>>,
-          std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>
+      std::vector<
+          std::pair<std::pair<Play, std::string>,
+                    std::vector<std::deque<std::pair<Play, std::string>>>>>
           variations;
       if (score > 0) {
         analyseMin(position, stalemate, depth - score + 1, pseudoLegalMovesMin,
-                   variations, includeVariations, includeThreats,
+                   variations, translate, includeVariations, includeThreats,
                    includeShortVariations, true);
       } else {
         analyseMin(position, stalemate, depth, pseudoLegalMovesMin, variations,
-                   includeVariations, includeThreats, includeShortVariations,
-                   true);
+                   translate, includeVariations, includeThreats,
+                   includeShortVariations, true);
       }
-      branches.push_back({{Play::SET, move}, toFlattened(variations)});
+      branches.push_back({{Play::SET, "null"}, toFlattened(variations)});
       if (logMoves) {
         if (score >= 0) {
           logger(std::clog) << "depth=" << depth << " move=*" << *move
@@ -109,40 +108,43 @@ void BattlePlay::analyseMax(
   if (includeActualPlay) {
     for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
-      if (move->make(position, pseudoLegalMovesMin)) {
+      std::ostringstream lanBuilder;
+      if (move->make(position, pseudoLegalMovesMin, lanBuilder, translate)) {
         int score = searchMin(position, stalemate, depth, pseudoLegalMovesMin,
                               includeTries);
         if (score > 0) {
           if (includeVariations && !(depth == getTerminalDepth())) {
-            std::vector<std::pair<std::pair<Play, std::shared_ptr<Move>>,
-                                  std::vector<std::deque<
-                                      std::pair<Play, std::shared_ptr<Move>>>>>>
+            std::vector<std::pair<
+                std::pair<Play, std::string>,
+                std::vector<std::deque<std::pair<Play, std::string>>>>>
                 variations;
             analyseMin(position, stalemate, depth - score + 1,
-                       pseudoLegalMovesMin, variations, true, includeThreats,
-                       includeShortVariations, false);
+                       pseudoLegalMovesMin, variations, translate, true,
+                       includeThreats, includeShortVariations, false);
             if (markKeys) {
-              branches.push_back({{Play::KEY, move}, toFlattened(variations)});
-            } else {
               branches.push_back(
-                  {{Play::CONTINUATION, move}, toFlattened(variations)});
+                  {{Play::KEY, lanBuilder.str()}, toFlattened(variations)});
+            } else {
+              branches.push_back({{Play::CONTINUATION, lanBuilder.str()},
+                                  toFlattened(variations)});
             }
           } else {
             if (markKeys) {
-              branches.push_back({{Play::KEY, move}, {}});
+              branches.push_back({{Play::KEY, lanBuilder.str()}, {}});
             } else {
-              branches.push_back({{Play::CONTINUATION, move}, {}});
+              branches.push_back({{Play::CONTINUATION, lanBuilder.str()}, {}});
             }
           }
         } else if (score >= -includeTries) {
-          std::vector<std::pair<
-              std::pair<Play, std::shared_ptr<Move>>,
-              std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>
+          std::vector<
+              std::pair<std::pair<Play, std::string>,
+                        std::vector<std::deque<std::pair<Play, std::string>>>>>
               variations;
           analyseMin(position, stalemate, depth, pseudoLegalMovesMin,
-                     variations, includeVariations, includeThreats,
+                     variations, translate, includeVariations, includeThreats,
                      includeShortVariations, false);
-          branches.push_back({{Play::TRY, move}, toFlattened(variations)});
+          branches.push_back(
+              {{Play::TRY, lanBuilder.str()}, toFlattened(variations)});
         }
         if (logMoves) {
           if (score >= -includeTries) {
@@ -161,23 +163,25 @@ void BattlePlay::analyseMax(
 void BattlePlay::analyseMin(
     Position& position, bool stalemate, int depth,
     const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
-    std::vector<std::pair<
-        std::pair<Play, std::shared_ptr<Move>>,
-        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>&
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>&
         branches,
-    bool includeVariations, bool includeThreats, bool includeShortVariations,
-    bool includeSetPlay) {
+    int translate, bool includeVariations, bool includeThreats,
+    bool includeShortVariations, bool includeSetPlay) {
   if (depth == getTerminalDepth()) {
     for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-      if (move->make(position)) {
-        branches.push_back({{Play::REFUTATION, move}, {}});
+      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+      std::ostringstream lanBuilder;
+      if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
+        branches.push_back({{Play::REFUTATION, lanBuilder.str()}, {}});
       }
       move->unmake(position);
     }
   } else {
-    std::vector<std::pair<
-        std::pair<Play, std::shared_ptr<Move>>,
-        std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>>>
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>
         threats;
     if (depth > 1 && includeVariations && includeThreats && !includeSetPlay) {
       std::shared_ptr<Move> move = std::make_shared<NullMove>();
@@ -187,39 +191,41 @@ void BattlePlay::analyseMin(
             searchMax(position, stalemate, depth - 1, pseudoLegalMovesMax);
         if (score > 0) {
           analyseMax(position, stalemate, depth - score, pseudoLegalMovesMax,
-                     threats, true, true, includeShortVariations, false, 0,
-                     true, false, false);
-          branches.push_back({{Play::THREAT, move}, toFlattened(threats)});
+                     threats, translate, true, true, includeShortVariations,
+                     false, 0, true, false, false);
+          branches.push_back({{Play::THREAT, "null"}, toFlattened(threats)});
         } else {
-          branches.push_back({{Play::ZUGZWANG, move}, {}});
+          branches.push_back({{Play::ZUGZWANG, "null"}, {}});
         }
       }
       move->unmake(position);
     }
     for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
-      if (move->make(position, pseudoLegalMovesMax)) {
+      std::ostringstream lanBuilder;
+      if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
         int score =
             searchMax(position, stalemate, depth - 1, pseudoLegalMovesMax);
         if (score > 0) {
           if ((includeVariations || includeSetPlay) &&
               (score == 1 || includeShortVariations)) {
-            std::vector<std::pair<std::pair<Play, std::shared_ptr<Move>>,
-                                  std::vector<std::deque<
-                                      std::pair<Play, std::shared_ptr<Move>>>>>>
+            std::vector<std::pair<
+                std::pair<Play, std::string>,
+                std::vector<std::deque<std::pair<Play, std::string>>>>>
                 continuations;
             analyseMax(position, stalemate, depth - score, pseudoLegalMovesMax,
-                       continuations, includeVariations, includeThreats,
-                       includeShortVariations, false, 0, true, false, false);
+                       continuations, translate, includeVariations,
+                       includeThreats, includeShortVariations, false, 0, true,
+                       false, false);
             if (std::find_first_of(continuations.begin(), continuations.end(),
                                    threats.begin(),
                                    threats.end()) == continuations.end()) {
-              branches.push_back(
-                  {{Play::VARIATION, move}, toFlattened(continuations)});
+              branches.push_back({{Play::VARIATION, lanBuilder.str()},
+                                  toFlattened(continuations)});
             }
           }
         } else if (!includeSetPlay) {
-          branches.push_back({{Play::REFUTATION, move}, {}});
+          branches.push_back({{Play::REFUTATION, lanBuilder.str()}, {}});
         }
       }
       move->unmake(position);
@@ -587,22 +593,22 @@ void MateSearch::solve(const AnalysisOptions& analysisOptions,
 void MateSearch::solve(Position& position, int nMoves, int translate) {
   std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
   if (position.isLegal(pseudoLegalMovesMax)) {
-    std::vector<std::pair<std::string, std::shared_ptr<Move>>> points;
+    std::vector<std::pair<std::string, std::string>> points;
     for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
-      if (move->make(position, pseudoLegalMovesMin)) {
+      std::ostringstream lanBuilder;
+      if (move->make(position, pseudoLegalMovesMin, lanBuilder, translate)) {
         for (int depth = 1; depth <= nMoves; depth++) {
           int score = searchMin(position, depth, pseudoLegalMovesMin);
           if (score > 0) {
-            points.push_back({"+M" + std::to_string(depth), move});
+            points.push_back({"+M" + std::to_string(depth), lanBuilder.str()});
             break;
           }
         }
       }
       move->unmake(position);
     }
-    std::cout << toFormatted(toTransformed(points, position, translate))
-              << std::endl;
+    std::cout << toOrderedAndFormatted(points) << std::endl;
   } else {
     std::cout << "Illegal position." << std::endl;
   }
