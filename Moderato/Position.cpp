@@ -48,13 +48,15 @@ Position::Position(
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>> box,
     std::stack<std::unique_ptr<Piece>> table, bool blackToMove,
     std::pair<std::set<int>, std::shared_ptr<int>> state,
-    std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory)
+    std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory,
+    std::unique_ptr<MoveFactory> moveFactory)
     : board_(std::move(board)),
       box_(std::move(box)),
       table_(std::move(table)),
       blackToMove_(blackToMove),
       state_(std::move(state)),
-      memory_(std::move(memory)) {}
+      memory_(std::move(memory)),
+      moveFactory_(std::move(moveFactory)) {}
 
 std::array<std::unique_ptr<Piece>, 128>& Position::getBoard() { return board_; }
 std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -76,7 +78,7 @@ bool Position::isLegal(std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
     if (!(square & 136)) {
       const std::unique_ptr<Piece>& piece = board_[square];
       if (piece && piece->isBlack() == blackToMove_) {
-        if (!piece->generateMoves(board_, box_, state_, square,
+        if (!piece->generateMoves(board_, box_, state_, square, *moveFactory_,
                                   pseudoLegalMoves)) {
           return false;
         }
@@ -135,7 +137,7 @@ std::ostream& operator<<(std::ostream& output, const Position& position) {
          << ", table=" << position.table_
          << ", blackToMove=" << position.blackToMove_
          << ", state=" << position.state_ << ", memory=" << position.memory_
-         << "]";
+         << ", moveFactory=*" << *position.moveFactory_ << "]";
   return output;
 }
 std::ostream& operator<<(std::ostream& output,

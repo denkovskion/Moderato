@@ -37,7 +37,7 @@ class QuietMove : public NullMove {
   void revertPieces(Position& position) const override;
   virtual void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board) const;
-  void removeCastlings(std::set<int>& castlings) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
   virtual void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -76,7 +76,7 @@ class Castling : public QuietMove {
       std::array<std::unique_ptr<Piece>, 128>& board) const override;
   void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board) const override;
-  void removeCastlings(std::set<int>& castlings) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
 
  protected:
   const int origin2_;
@@ -104,7 +104,10 @@ class ShortCastling : public Castling {
 
 class DoubleStep : public QuietMove {
   void write(std::ostream& output) const override;
-  void setEnPassant(std::shared_ptr<int>& enPassant) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+  void updateEnPassant(std::shared_ptr<int>& enPassant) const override;
+
+ protected:
   const int stop_;
 
  public:
@@ -117,8 +120,11 @@ class EnPassant : public Capture {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
+
+ protected:
   const int stop_;
 
  public:
@@ -128,12 +134,12 @@ class EnPassant : public Capture {
 class Promotion : public QuietMove {
   void write(std::ostream& output) const override;
   void updatePieces(Position& position) const override;
-  void updatePieces(
+  virtual void updatePieces(
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box)
       const;
   void revertPieces(Position& position) const override;
-  void revertPieces(
+  virtual void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box)
       const;
@@ -156,12 +162,12 @@ class Promotion : public QuietMove {
 class PromotionCapture : public Promotion {
   void write(std::ostream& output) const override;
   void updatePieces(Position& position) const override;
-  void updatePieces(
+  virtual void updatePieces(
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const;
   void revertPieces(Position& position) const override;
-  void revertPieces(
+  virtual void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const;
@@ -174,5 +180,8 @@ class PromotionCapture : public Promotion {
  public:
   PromotionCapture(int origin, int target, bool black, int order);
 };
+
+std::string toCode(const std::array<std::unique_ptr<Piece>, 128>& board,
+                   int square);
 
 }  // namespace moderato

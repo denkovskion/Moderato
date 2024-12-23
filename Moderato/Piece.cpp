@@ -30,6 +30,7 @@ Piece::Piece(bool black) : black_(black) {}
 Piece::~Piece() {}
 bool Piece::isBlack() const { return black_; }
 bool Piece::isRoyal() const { return false; }
+bool Piece::isCastling() const { return false; }
 std::ostream& operator<<(std::ostream& output, const Piece& piece) {
   output << piece.getName() << "[black=" << piece.black_ << "]";
   return output;

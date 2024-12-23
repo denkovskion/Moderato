@@ -26,7 +26,7 @@
 
 #include <stack>
 
-#include "Piece.h"
+#include "MoveFactory.h"
 
 namespace moderato {
 
@@ -37,6 +37,7 @@ class Position {
   bool blackToMove_ = false;
   std::pair<std::set<int>, std::shared_ptr<int>> state_;
   std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory_;
+  std::unique_ptr<MoveFactory> moveFactory_;
 
  public:
   Position(
@@ -44,7 +45,8 @@ class Position {
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>> box,
       std::stack<std::unique_ptr<Piece>> table, bool blackToMove,
       std::pair<std::set<int>, std::shared_ptr<int>> state,
-      std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory);
+      std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory,
+      std::unique_ptr<MoveFactory> moveFactory);
 
   std::array<std::unique_ptr<Piece>, 128>& getBoard();
   std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& getBox();

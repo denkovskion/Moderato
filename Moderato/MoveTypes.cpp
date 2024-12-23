@@ -28,9 +28,6 @@
 
 namespace moderato {
 
-std::string toCode(const std::array<std::unique_ptr<Piece>, 128>& board,
-                   int square);
-
 QuietMove::QuietMove(int origin, int target)
     : origin_(origin), target_(target) {}
 void QuietMove::write(std::ostream& output) const {
@@ -50,7 +47,7 @@ void QuietMove::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
   board[origin_] = std::move(board[target_]);
 }
-void QuietMove::removeCastlings(std::set<int>& castlings) const {
+void QuietMove::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
 }
@@ -137,9 +134,11 @@ void Castling::revertPieces(
   board[origin2_] = std::move(board[target2_]);
   board[origin_] = std::move(board[target_]);
 }
-void Castling::removeCastlings(std::set<int>& castlings) const {
+void Castling::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
+  castlings.erase(target_);
   castlings.erase(origin2_);
+  castlings.erase(target2_);
 }
 
 LongCastling::LongCastling(int origin, int target, int origin2, int target2)
@@ -170,7 +169,12 @@ void DoubleStep::write(std::ostream& output) const {
   output << "DoubleStep[origin=" << origin_ << ", target=" << target_
          << ", stop=" << stop_ << "]";
 }
-void DoubleStep::setEnPassant(std::shared_ptr<int>& enPassant) const {
+void DoubleStep::updateCastlings(std::set<int>& castlings) const {
+  castlings.erase(origin_);
+  castlings.erase(target_);
+  castlings.erase(stop_);
+}
+void DoubleStep::updateEnPassant(std::shared_ptr<int>& enPassant) const {
   enPassant = std::make_shared<int>(stop_);
 }
 
@@ -190,6 +194,11 @@ void EnPassant::revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
   board[origin_] = std::move(board[target_]);
   board[stop_] = std::move(table.top());
   table.pop();
+}
+void EnPassant::updateCastlings(std::set<int>& castlings) const {
+  castlings.erase(origin_);
+  castlings.erase(target_);
+  castlings.erase(stop_);
 }
 void EnPassant::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                          std::ostream& lanBuilder, int translate) const {

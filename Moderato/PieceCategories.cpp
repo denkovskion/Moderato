@@ -24,12 +24,12 @@
 
 #include "PieceCategories.h"
 
-#include "MoveTypes.h"
+#include "MoveFactory.h"
 
 namespace moderato {
 
 bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                           int origin,
+                           int origin, const MoveFactory& moveFactory,
                            std::vector<std::shared_ptr<Move>>& moves) const {
   const std::vector<int>& directions = getLeaps(board);
   for (int direction : directions) {
@@ -41,10 +41,10 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
           if (piece->isRoyal()) {
             return false;
           }
-          moves.push_back(std::make_shared<Capture>(origin, target));
+          moveFactory.generateCapture(board, origin, target, moves);
         }
       } else {
-        moves.push_back(std::make_shared<QuietMove>(origin, target));
+        moveFactory.generateQuietMove(board, origin, target, moves);
       }
     }
   }
@@ -70,7 +70,7 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
 }
 
 bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                          int origin,
+                          int origin, const MoveFactory& moveFactory,
                           std::vector<std::shared_ptr<Move>>& moves) const {
   const std::vector<int>& directions = getRides(board);
   for (int direction : directions) {
@@ -84,11 +84,11 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
             if (piece->isRoyal()) {
               return false;
             }
-            moves.push_back(std::make_shared<Capture>(origin, target));
+            moveFactory.generateCapture(board, origin, target, moves);
           }
           break;
         } else {
-          moves.push_back(std::make_shared<QuietMove>(origin, target));
+          moveFactory.generateQuietMove(board, origin, target, moves);
           distance++;
         }
       } else {

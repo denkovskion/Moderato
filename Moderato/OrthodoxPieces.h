@@ -39,6 +39,7 @@ class King : public Piece, private Leaper {
   King(bool black);
   bool isBlack() const override;
   bool isRoyal() const override;
+  bool isCastling() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
                         int square) const override;
   bool generateMoves(
@@ -46,6 +47,7 @@ class King : public Piece, private Leaper {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -73,6 +75,7 @@ class Queen : public Piece, private Rider {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -93,6 +96,7 @@ class Rook : public Piece, private Rider {
  public:
   Rook(bool black);
   bool isBlack() const override;
+  bool isCastling() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
                         int square) const override;
   bool generateMoves(
@@ -100,6 +104,7 @@ class Rook : public Piece, private Rider {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -127,6 +132,7 @@ class Bishop : public Piece, private Rider {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -154,6 +160,7 @@ class Knight : public Piece, private Leaper {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -176,6 +183,7 @@ class Pawn : public Piece {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,

@@ -24,7 +24,7 @@
 
 #include "OrthodoxPieces.h"
 
-#include "MoveTypes.h"
+#include "MoveFactory.h"
 
 namespace moderato {
 
@@ -42,6 +42,9 @@ bool Bishop::isBlack() const { return Piece::isBlack(); }
 bool Knight::isBlack() const { return Piece::isBlack(); }
 
 bool King::isRoyal() const { return true; }
+
+bool King::isCastling() const { return true; }
+bool Rook::isCastling() const { return true; }
 
 int King::findRebirthSquare(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin) const {
@@ -85,8 +88,9 @@ bool King::generateMoves(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  if (!Leaper::generateMoves(board, origin, moves)) {
+  if (!Leaper::generateMoves(board, origin, moveFactory, moves)) {
     return false;
   }
   const std::set<int>& castlings = state.first;
@@ -100,11 +104,11 @@ bool King::generateMoves(
             int target = origin + 2 * direction;
             int target2 = origin + direction;
             if (direction > 0) {
-              moves.push_back(std::make_shared<ShortCastling>(
-                  origin, target, origin2, target2));
+              moveFactory.generateShortCastling(board, origin, target, origin2,
+                                                target2, moves);
             } else {
-              moves.push_back(std::make_shared<LongCastling>(origin, target,
-                                                             origin2, target2));
+              moveFactory.generateLongCastling(board, origin, target, origin2,
+                                               target2, moves);
             }
             break;
           } else if (board.at(origin2)) {
@@ -143,8 +147,9 @@ bool Queen::generateMoves(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  return Rider::generateMoves(board, origin, moves);
+  return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Queen::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -169,8 +174,9 @@ bool Rook::generateMoves(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  return Rider::generateMoves(board, origin, moves);
+  return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Rook::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -195,8 +201,9 @@ bool Bishop::generateMoves(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  return Rider::generateMoves(board, origin, moves);
+  return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Bishop::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -221,8 +228,9 @@ bool Knight::generateMoves(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  return Leaper::generateMoves(board, origin, moves);
+  return Leaper::generateMoves(board, origin, moveFactory, moves);
 }
 bool Knight::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -238,6 +246,7 @@ bool Pawn::generateMoves(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
   int directions[] = {black_ ? -17 : -15, black_ ? -1 : 1, black_ ? 15 : 17};
   for (int direction : directions) {
@@ -257,11 +266,11 @@ bool Pawn::generateMoves(
                                    std::deque<std::unique_ptr<Piece>>>&
                        promotion : promotions) {
                 int order = promotion.first;
-                moves.push_back(std::make_shared<PromotionCapture>(
-                    origin, target, black_, order));
+                moveFactory.generatePromotionCapture(board, box, origin, target,
+                                                     black_, order, moves);
               }
             } else {
-              moves.push_back(std::make_shared<Capture>(origin, target));
+              moveFactory.generateCapture(board, origin, target, moves);
             }
           }
         } else {
@@ -271,7 +280,7 @@ bool Pawn::generateMoves(
             if (board.at(stop)->isRoyal()) {
               return false;
             }
-            moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
+            moveFactory.generateEnPassant(board, origin, target, stop, moves);
           }
         }
       } else {
@@ -282,17 +291,17 @@ bool Pawn::generateMoves(
             for (const std::pair<const int, std::deque<std::unique_ptr<Piece>>>&
                      promotion : promotions) {
               int order = promotion.first;
-              moves.push_back(
-                  std::make_shared<Promotion>(origin, target, black_, order));
+              moveFactory.generatePromotion(board, box, origin, target, black_,
+                                            order, moves);
             }
           } else {
-            moves.push_back(std::make_shared<QuietMove>(origin, target));
+            moveFactory.generateQuietMove(board, origin, target, moves);
             if (origin % 16 == (black_ ? 6 : 1)) {
               target = origin + 2 * direction;
               if (!board.at(target)) {
                 int stop = origin + direction;
-                moves.push_back(
-                    std::make_shared<DoubleStep>(origin, target, stop));
+                moveFactory.generateDoubleStep(board, origin, target, stop,
+                                               moves);
               }
             }
           }

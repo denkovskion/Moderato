@@ -37,6 +37,7 @@
 namespace moderato {
 
 class Move;
+class MoveFactory;
 
 class Piece {
   virtual std::string getName() const = 0;
@@ -49,6 +50,7 @@ class Piece {
   virtual ~Piece();
   bool isBlack() const;
   virtual bool isRoyal() const;
+  virtual bool isCastling() const;
   virtual int findRebirthSquare(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       int origin) const = 0;
@@ -57,6 +59,7 @@ class Piece {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
       std::vector<std::shared_ptr<Move>>& moves) const = 0;
   virtual bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,

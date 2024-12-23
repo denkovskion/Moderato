@@ -29,6 +29,7 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "FairyConditions.h"
 #include "OrthodoxPieces.h"
 #include "ProblemTypes.h"
 
@@ -71,7 +72,11 @@ struct Options {
   bool halfDuplex;
   std::vector<Square> noCastling;
 };
+struct Conditions {
+  bool circe;
+};
 struct Problem {
+  Conditions conditions;
   Options options;
   Stipulation stipulation;
   std::vector<Piece> pieces;
@@ -88,6 +93,7 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
   enum Transition {
     kPopeyeLanguage,
     kPopeyeCommand,
+    kPopeyeCondition,
     kPopeyeOption,
     kPopeyeDefence,
     kPopeyeEnPassant,
@@ -137,6 +143,15 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                                          : "bemerkung")) {
         hasNextToken = false;
         transitions = {kPopeyeCommand, kPopeyeDirective};
+      } else if (transitions.count(kPopeyeCommand) &&
+                 popeyeToken == (!german ? !french ? "condition" : "condition"
+                                         : "bedingung")) {
+        transitions = {kPopeyeCondition};
+      } else if (transitions.count(kPopeyeCondition) &&
+                 popeyeToken ==
+                     (!german ? !french ? "circe" : "circe" : "circe")) {
+        problem.conditions.circe = true;
+        transitions = {kPopeyeCondition, kPopeyeCommand, kPopeyeDirective};
       } else if (transitions.count(kPopeyeCommand) &&
                  popeyeToken ==
                      (!german ? !french ? "option" : "option" : "option")) {
@@ -667,8 +682,15 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
     state.second = std::make_shared<int>(square);
   }
   std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory;
+  std::unique_ptr<MoveFactory> moveFactory;
+  if (specification.conditions.circe) {
+    moveFactory = std::make_unique<CirceMoveFactory>();
+  } else {
+    moveFactory = std::make_unique<MoveFactory>();
+  }
   Position position(std::move(board), std::move(box), std::move(table),
-                    blackToMove, std::move(state), std::move(memory));
+                    blackToMove, std::move(state), std::move(memory),
+                    std::move(moveFactory));
   int nMoves = specification.stipulation.stipulationType == popeye::Help &&
                        specification.options.whiteToPlay
                    ? specification.stipulation.nMoves - 1

@@ -37,7 +37,8 @@ of [Popeye](https://github.com/thomas-maeder/popeye). Moderato accepts the follo
 and keywords:
 
 - Directives: `BeginProblem`, `EndProblem`, `NextProblem`
-- Commands: `Remark`, `Option`, `Stipulation`, `Pieces`
+- Commands: `Remark`, `Condition`, `Option`, `Stipulation`, `Pieces`
+- Conditions: `Circe`
 - Options: `Try`, `Defence`, `SetPlay`, `NullMoves`, `WhiteToPlay`, `Variation`, `MoveNumbers`,
   `NoThreat`, `EnPassant`, `NoBoard`, `NoShortVariations`, `HalfDuplex`, `NoCastling`
 - Stipulation types: direct, help`h`, self`s`
