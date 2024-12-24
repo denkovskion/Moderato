@@ -132,6 +132,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FairyConditions.cpp" />
+    <ClCompile Include="FairyPieces.cpp" />
     <ClCompile Include="Moderato.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="MoveFactory.cpp" />
@@ -147,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FairyConditions.h" />
+    <ClInclude Include="FairyPieces.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveFactory.h" />
     <ClInclude Include="MoveTypes.h" />

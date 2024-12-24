@@ -54,6 +54,9 @@
     <ClCompile Include="FairyConditions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FairyPieces.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Move.h">
@@ -87,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FairyConditions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FairyPieces.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

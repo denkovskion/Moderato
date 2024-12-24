@@ -125,4 +125,71 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
   return true;
 }
 
+bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
+                           int origin, const MoveFactory& moveFactory,
+                           std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::vector<int>& directions = getHops(board);
+  for (int direction : directions) {
+    int distance = 1;
+    while (true) {
+      int target = origin + distance * direction;
+      if (!(target & 136)) {
+        if (board.at(target)) {
+          target = origin + (distance + 1) * direction;
+          if (!(target & 136)) {
+            const std::unique_ptr<Piece>& piece = board.at(target);
+            if (piece) {
+              if (piece->isBlack() != isBlack()) {
+                if (piece->isRoyal()) {
+                  return false;
+                }
+                moveFactory.generateCapture(board, origin, target, moves);
+              }
+            } else {
+              moveFactory.generateQuietMove(board, origin, target, moves);
+            }
+          }
+          break;
+        } else {
+          distance++;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  return true;
+}
+bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
+                           int origin) const {
+  const std::vector<int>& directions = getHops(board);
+  for (int direction : directions) {
+    int distance = 1;
+    while (true) {
+      int target = origin + distance * direction;
+      if (!(target & 136)) {
+        if (board.at(target)) {
+          target = origin + (distance + 1) * direction;
+          if (!(target & 136)) {
+            const std::unique_ptr<Piece>& piece = board.at(target);
+            if (piece) {
+              if (piece->isBlack() != isBlack()) {
+                if (piece->isRoyal()) {
+                  return false;
+                }
+              }
+            }
+          }
+          break;
+        } else {
+          distance++;
+        }
+      } else {
+        break;
+      }
+    }
+  }
+  return true;
+}
+
 }  // namespace moderato

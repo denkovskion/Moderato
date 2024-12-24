@@ -43,7 +43,8 @@ and keywords:
   `NoThreat`, `EnPassant`, `NoBoard`, `NoShortVariations`, `HalfDuplex`, `NoCastling`
 - Stipulation types: direct, help`h`, self`s`
 - Goals: mate`#`, stalemate`=`
-- Piece types: king`K`, queen`Q`, rook`R`, bishop`B`, knight`S`, pawn`P`
+- Piece types: king`K`, queen`Q`, rook`R`, bishop`B`, knight`S`, pawn`P`, grasshopper`G`,
+  nightrider`N`
 - Piece colours: `White`, `Black`
 
 The French or German variant of the input language can be used as well. The input is not

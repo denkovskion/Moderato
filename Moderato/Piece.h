@@ -53,7 +53,7 @@ class Piece {
   virtual bool isCastling() const;
   virtual int findRebirthSquare(
       const std::array<std::unique_ptr<Piece>, 128>& board,
-      int origin) const = 0;
+      int square) const = 0;
   virtual bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&

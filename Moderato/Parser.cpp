@@ -30,6 +30,7 @@
 #include <stdexcept>
 
 #include "FairyConditions.h"
+#include "FairyPieces.h"
 #include "OrthodoxPieces.h"
 #include "ProblemTypes.h"
 
@@ -43,7 +44,16 @@ struct Square {
   File file;
   Rank rank;
 };
-enum PieceType { King, Queen, Rook, Bishop, Knight, Pawn };
+enum PieceType {
+  King,
+  Queen,
+  Rook,
+  Bishop,
+  Knight,
+  Pawn,
+  Grasshopper,
+  Nightrider
+};
 enum Colour { White, Black };
 struct Piece {
   Square square;
@@ -288,16 +298,16 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
       } else if (transitions.count(kPopeyePiece) &&
                  std::regex_match(
                      popeyeToken,
-                     std::regex(!german ? !french
-                                              ? "(k|q|r|b|s|p)(([a-h][1-8])+)"
-                                              : "(r|d|t|f|c|p)(([a-h][1-8])+)"
-                                        : "(k|d|t|l|s|b)(([a-h][1-8])+)"))) {
+                     std::regex(
+                         !german ? !french ? "(k|q|r|b|s|p|g|n)(([a-h][1-8])+)"
+                                           : "(r|d|t|f|c|p|s|n)(([a-h][1-8])+)"
+                                 : "(k|d|t|l|s|b|g|n)(([a-h][1-8])+)"))) {
         std::smatch pieceMatch;
         std::regex_match(
             popeyeToken, pieceMatch,
-            std::regex(!german ? !french ? "(k|q|r|b|s|p)(([a-h][1-8])+)"
-                                         : "(r|d|t|f|c|p)(([a-h][1-8])+)"
-                               : "(k|d|t|l|s|b)(([a-h][1-8])+)"));
+            std::regex(!german ? !french ? "(k|q|r|b|s|p|g|n)(([a-h][1-8])+)"
+                                         : "(r|d|t|f|c|p|s|n)(([a-h][1-8])+)"
+                               : "(k|d|t|l|s|b|g|n)(([a-h][1-8])+)"));
         popeye::PieceType pieceType =
             pieceMatch[1] == (!german ? !french ? "q" : "d" : "d")
                 ? popeye::Queen
@@ -309,6 +319,10 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                 ? popeye::Knight
             : pieceMatch[1] == (!german ? !french ? "p" : "p" : "b")
                 ? popeye::Pawn
+            : pieceMatch[1] == (!german ? !french ? "g" : "s" : "g")
+                ? popeye::Grasshopper
+            : pieceMatch[1] == (!german ? !french ? "n" : "n" : "n")
+                ? popeye::Nightrider
                 : popeye::King;
         std::string squaresSubsequence = pieceMatch[2];
         for (std::smatch squareMatch; std::regex_search(
@@ -609,11 +623,22 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
       board[square] = std::make_unique<Knight>(black);
     } else if (piece.pieceType == popeye::Pawn) {
       board[square] = std::make_unique<Pawn>(black);
+    } else if (piece.pieceType == popeye::Grasshopper) {
+      board[square] = std::make_unique<Grasshopper>(black);
+    } else if (piece.pieceType == popeye::Nightrider) {
+      board[square] = std::make_unique<Nightrider>(black);
     } else {
       board[square] = std::make_unique<King>(black);
     }
   }
   std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>> box;
+  std::set<popeye::PieceType> promotionTypes = {popeye::Queen, popeye::Rook,
+                                                popeye::Bishop, popeye::Knight};
+  for (const popeye::Piece& piece : specification.pieces) {
+    if (piece.pieceType != popeye::King && piece.pieceType != popeye::Pawn) {
+      promotionTypes.insert(piece.pieceType);
+    }
+  }
   for (const popeye::Colour& colour : {popeye::White, popeye::Black}) {
     int maxMove =
         (specification.stipulation.stipulationType == popeye::Direct ||
@@ -638,10 +663,22 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
       bool black = colour == popeye::Black;
       for (int promotionNo = maxPromotion; promotionNo--;) {
         int order = 0;
-        box[black][++order].push_front(std::make_unique<Queen>(black));
-        box[black][++order].push_front(std::make_unique<Rook>(black));
-        box[black][++order].push_front(std::make_unique<Bishop>(black));
-        box[black][++order].push_front(std::make_unique<Knight>(black));
+        for (const popeye::PieceType& promotionType : promotionTypes) {
+          if (promotionType == popeye::Rook) {
+            box[black][++order].push_front(std::make_unique<Rook>(black));
+          } else if (promotionType == popeye::Bishop) {
+            box[black][++order].push_front(std::make_unique<Bishop>(black));
+          } else if (promotionType == popeye::Knight) {
+            box[black][++order].push_front(std::make_unique<Knight>(black));
+          } else if (promotionType == popeye::Grasshopper) {
+            box[black][++order].push_front(
+                std::make_unique<Grasshopper>(black));
+          } else if (promotionType == popeye::Nightrider) {
+            box[black][++order].push_front(std::make_unique<Nightrider>(black));
+          } else {
+            box[black][++order].push_front(std::make_unique<Queen>(black));
+          }
+        }
       }
     }
   }

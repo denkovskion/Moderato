@@ -54,4 +54,17 @@ class Rider {
                      int origin) const;
 };
 
+class Hopper {
+  virtual bool isBlack() const = 0;
+  virtual const std::vector<int>& getHops(
+      const std::array<std::unique_ptr<Piece>, 128>& board) const = 0;
+
+ protected:
+  bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
+                     int origin, const MoveFactory& moveFactory,
+                     std::vector<std::shared_ptr<Move>>& moves) const;
+  bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
+                     int origin) const;
+};
+
 }  // namespace moderato
