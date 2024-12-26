@@ -38,14 +38,14 @@ void QuietMove::updatePieces(Position& position) const {
 }
 void QuietMove::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
-  board[target_] = std::move(board[origin_]);
+  board.at(target_) = std::move(board.at(origin_));
 }
 void QuietMove::revertPieces(Position& position) const {
   revertPieces(position.getBoard());
 }
 void QuietMove::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
-  board[origin_] = std::move(board[target_]);
+  board.at(origin_) = std::move(board.at(target_));
 }
 void QuietMove::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
@@ -57,7 +57,7 @@ void QuietMove::preWrite(Position& position, std::ostream& lanBuilder,
 }
 void QuietMove::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                          std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "-" << toCode(board, target_);
 }
 void QuietMove::postWrite(
@@ -95,21 +95,21 @@ void Capture::updatePieces(Position& position) const {
 }
 void Capture::updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
                            std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[target_]));
-  board[target_] = std::move(board[origin_]);
+  table.push(std::move(board.at(target_)));
+  board.at(target_) = std::move(board.at(origin_));
 }
 void Capture::revertPieces(Position& position) const {
   revertPieces(position.getBoard(), position.getTable());
 }
 void Capture::revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                            std::stack<std::unique_ptr<Piece>>& table) const {
-  board[origin_] = std::move(board[target_]);
-  board[target_] = std::move(table.top());
+  board.at(origin_) = std::move(board.at(target_));
+  board.at(target_) = std::move(table.top());
   table.pop();
 }
 void Capture::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                        std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "x" << toCode(board, target_);
 }
 
@@ -126,13 +126,13 @@ bool Castling::preMake(Position& position) const {
 }
 void Castling::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
-  board[target_] = std::move(board[origin_]);
-  board[target2_] = std::move(board[origin2_]);
+  board.at(target_) = std::move(board.at(origin_));
+  board.at(target2_) = std::move(board.at(origin2_));
 }
 void Castling::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
-  board[origin2_] = std::move(board[target2_]);
-  board[origin_] = std::move(board[target_]);
+  board.at(origin2_) = std::move(board.at(target2_));
+  board.at(origin_) = std::move(board.at(target_));
 }
 void Castling::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
@@ -186,13 +186,13 @@ void EnPassant::write(std::ostream& output) const {
 }
 void EnPassant::updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
                              std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[stop_]));
-  board[target_] = std::move(board[origin_]);
+  table.push(std::move(board.at(stop_)));
+  board.at(target_) = std::move(board.at(origin_));
 }
 void EnPassant::revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                              std::stack<std::unique_ptr<Piece>>& table) const {
-  board[origin_] = std::move(board[target_]);
-  board[stop_] = std::move(table.top());
+  board.at(origin_) = std::move(board.at(target_));
+  board.at(stop_) = std::move(table.top());
   table.pop();
 }
 void EnPassant::updateCastlings(std::set<int>& castlings) const {
@@ -202,7 +202,7 @@ void EnPassant::updateCastlings(std::set<int>& castlings) const {
 }
 void EnPassant::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                          std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "x" << toCode(board, target_) << " e.p.";
 }
 
@@ -219,8 +219,8 @@ void Promotion::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box)
     const {
-  box.at(black_).at(order_).push_back(std::move(board[origin_]));
-  board[target_] = std::move(box.at(black_).at(order_).front());
+  box.at(black_).at(order_).push_back(std::move(board.at(origin_)));
+  board.at(target_) = std::move(box.at(black_).at(order_).front());
   box.at(black_).at(order_).pop_front();
 }
 void Promotion::revertPieces(Position& position) const {
@@ -230,8 +230,8 @@ void Promotion::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box)
     const {
-  box.at(black_).at(order_).push_front(std::move(board[target_]));
-  board[origin_] = std::move(box.at(black_).at(order_).back());
+  box.at(black_).at(order_).push_front(std::move(board.at(target_)));
+  board.at(origin_) = std::move(box.at(black_).at(order_).back());
   box.at(black_).at(order_).pop_back();
 }
 void Promotion::preWrite(Position& position, std::ostream& lanBuilder,
@@ -243,7 +243,7 @@ void Promotion::preWrite(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "-" << toCode(board, target_) << "="
              << box.at(black_).at(order_).front()->getCode(translate);
 }
@@ -262,9 +262,9 @@ void PromotionCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[target_]));
-  box.at(black_).at(order_).push_back(std::move(board[origin_]));
-  board[target_] = std::move(box.at(black_).at(order_).front());
+  table.push(std::move(board.at(target_)));
+  box.at(black_).at(order_).push_back(std::move(board.at(origin_)));
+  board.at(target_) = std::move(box.at(black_).at(order_).front());
   box.at(black_).at(order_).pop_front();
 }
 void PromotionCapture::revertPieces(Position& position) const {
@@ -274,10 +274,10 @@ void PromotionCapture::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  box.at(black_).at(order_).push_front(std::move(board[target_]));
-  board[origin_] = std::move(box.at(black_).at(order_).back());
+  box.at(black_).at(order_).push_front(std::move(board.at(target_)));
+  board.at(origin_) = std::move(box.at(black_).at(order_).back());
   box.at(black_).at(order_).pop_back();
-  board[target_] = std::move(table.top());
+  board.at(target_) = std::move(table.top());
   table.pop();
 }
 void PromotionCapture::preWrite(
@@ -285,7 +285,7 @@ void PromotionCapture::preWrite(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "x" << toCode(board, target_) << "="
              << box.at(black_).at(order_).front()->getCode(translate);
 }

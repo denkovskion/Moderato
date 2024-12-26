@@ -29,7 +29,7 @@
 
 namespace moderato {
 
-class CaptureRebirth : public Capture {
+class CirceCapture : public Capture {
   void write(std::ostream& output) const override;
   void updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
@@ -42,18 +42,18 @@ class CaptureRebirth : public Capture {
   const int rebirth_;
 
  public:
-  CaptureRebirth(int origin, int target, int rebirth);
+  CirceCapture(int origin, int target, int rebirth);
 };
 
-class CaptureRebirthCastling : public CaptureRebirth {
+class CirceCaptureCastling : public CirceCapture {
   void write(std::ostream& output) const override;
   void updateCastlings(std::set<int>& castlings) const override;
 
  public:
-  CaptureRebirthCastling(int origin, int target, int rebirth);
+  CirceCaptureCastling(int origin, int target, int rebirth);
 };
 
-class EnPassantRebirth : public EnPassant {
+class CirceEnPassant : public EnPassant {
   void write(std::ostream& output) const override;
   void updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
@@ -66,18 +66,18 @@ class EnPassantRebirth : public EnPassant {
   const int rebirth_;
 
  public:
-  EnPassantRebirth(int origin, int target, int stop, int rebirth);
+  CirceEnPassant(int origin, int target, int stop, int rebirth);
 };
 
-class EnPassantRebirthCastling : public EnPassantRebirth {
+class CirceEnPassantCastling : public CirceEnPassant {
   void write(std::ostream& output) const override;
   void updateCastlings(std::set<int>& castlings) const override;
 
  public:
-  EnPassantRebirthCastling(int origin, int target, int stop, int rebirth);
+  CirceEnPassantCastling(int origin, int target, int stop, int rebirth);
 };
 
-class PromotionCaptureRebirth : public PromotionCapture {
+class CircePromotionCapture : public PromotionCapture {
   void write(std::ostream& output) const override;
   void updatePieces(
       std::array<std::unique_ptr<Piece>, 128>& board,
@@ -97,17 +97,17 @@ class PromotionCaptureRebirth : public PromotionCapture {
   const int rebirth_;
 
  public:
-  PromotionCaptureRebirth(int origin, int target, bool black, int order,
-                          int rebirth);
+  CircePromotionCapture(int origin, int target, bool black, int order,
+                        int rebirth);
 };
 
-class PromotionCaptureRebirthCastling : public PromotionCaptureRebirth {
+class CircePromotionCaptureCastling : public CircePromotionCapture {
   void write(std::ostream& output) const override;
   void updateCastlings(std::set<int>& castlings) const override;
 
  public:
-  PromotionCaptureRebirthCastling(int origin, int target, bool black, int order,
-                                  int rebirth);
+  CircePromotionCaptureCastling(int origin, int target, bool black, int order,
+                                int rebirth);
 };
 
 class CirceMoveFactory : public MoveFactory {

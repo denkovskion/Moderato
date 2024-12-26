@@ -614,21 +614,21 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
     int square = 16 * piece.square.file + piece.square.rank;
     bool black = piece.colour == popeye::Black;
     if (piece.pieceType == popeye::Queen) {
-      board[square] = std::make_unique<Queen>(black);
+      board.at(square) = std::make_unique<Queen>(black);
     } else if (piece.pieceType == popeye::Rook) {
-      board[square] = std::make_unique<Rook>(black);
+      board.at(square) = std::make_unique<Rook>(black);
     } else if (piece.pieceType == popeye::Bishop) {
-      board[square] = std::make_unique<Bishop>(black);
+      board.at(square) = std::make_unique<Bishop>(black);
     } else if (piece.pieceType == popeye::Knight) {
-      board[square] = std::make_unique<Knight>(black);
+      board.at(square) = std::make_unique<Knight>(black);
     } else if (piece.pieceType == popeye::Pawn) {
-      board[square] = std::make_unique<Pawn>(black);
+      board.at(square) = std::make_unique<Pawn>(black);
     } else if (piece.pieceType == popeye::Grasshopper) {
-      board[square] = std::make_unique<Grasshopper>(black);
+      board.at(square) = std::make_unique<Grasshopper>(black);
     } else if (piece.pieceType == popeye::Nightrider) {
-      board[square] = std::make_unique<Nightrider>(black);
+      board.at(square) = std::make_unique<Nightrider>(black);
     } else {
-      board[square] = std::make_unique<King>(black);
+      board.at(square) = std::make_unique<King>(black);
     }
   }
   std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>> box;

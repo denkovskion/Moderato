@@ -76,7 +76,7 @@ Position::getMemory() {
 bool Position::isLegal(std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
   for (int square = 0; square < 128; square++) {
     if (!(square & 136)) {
-      const std::unique_ptr<Piece>& piece = board_[square];
+      const std::unique_ptr<Piece>& piece = board_.at(square);
       if (piece && piece->isBlack() == blackToMove_) {
         if (!piece->generateMoves(board_, box_, state_, square, *moveFactory_,
                                   pseudoLegalMoves)) {
@@ -90,7 +90,7 @@ bool Position::isLegal(std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
 bool Position::isLegal() {
   for (int square = 0; square < 128; square++) {
     if (!(square & 136)) {
-      const std::unique_ptr<Piece>& piece = board_[square];
+      const std::unique_ptr<Piece>& piece = board_.at(square);
       if (piece && piece->isBlack() == blackToMove_) {
         if (!piece->generateMoves(board_, box_, state_, square)) {
           return false;
@@ -107,7 +107,7 @@ int Position::isCheck() {
   int nChecks = 0;
   for (int square = 0; square < 128; square++) {
     if (!(square & 136)) {
-      const std::unique_ptr<Piece>& piece = board_[square];
+      const std::unique_ptr<Piece>& piece = board_.at(square);
       if (piece && piece->isBlack() == blackToMove_) {
         if (!piece->generateMoves(board_, box_, state_, square)) {
           nChecks++;

@@ -26,149 +26,146 @@
 
 namespace moderato {
 
-CaptureRebirth::CaptureRebirth(int origin, int target, int rebirth)
+CirceCapture::CirceCapture(int origin, int target, int rebirth)
     : Capture(origin, target), rebirth_(rebirth) {}
-void CaptureRebirth::write(std::ostream& output) const {
-  output << "CaptureRebirth[origin=" << origin_ << ", target=" << target_
+void CirceCapture::write(std::ostream& output) const {
+  output << "CirceCapture[origin=" << origin_ << ", target=" << target_
          << ", rebirth=" << rebirth_ << "]";
 }
-void CaptureRebirth::updatePieces(
+void CirceCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[target_]));
-  board[target_] = std::move(board[origin_]);
-  board[rebirth_] = std::move(table.top());
+  table.push(std::move(board.at(target_)));
+  board.at(target_) = std::move(board.at(origin_));
+  board.at(rebirth_) = std::move(table.top());
   table.pop();
 }
-void CaptureRebirth::revertPieces(
+void CirceCapture::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[rebirth_]));
-  board[origin_] = std::move(board[target_]);
-  board[target_] = std::move(table.top());
+  table.push(std::move(board.at(rebirth_)));
+  board.at(origin_) = std::move(board.at(target_));
+  board.at(target_) = std::move(table.top());
   table.pop();
 }
-void CaptureRebirth::preWrite(
+void CirceCapture::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "x" << toCode(board, target_) << "("
-             << board[target_]->getCode(translate) << toCode(board, rebirth_)
+             << board.at(target_)->getCode(translate) << toCode(board, rebirth_)
              << ")";
 }
 
-CaptureRebirthCastling::CaptureRebirthCastling(int origin, int target,
-                                               int rebirth)
-    : CaptureRebirth(origin, target, rebirth) {}
-void CaptureRebirthCastling::write(std::ostream& output) const {
-  output << "CaptureRebirthCastling[origin=" << origin_
-         << ", target=" << target_ << ", rebirth=" << rebirth_ << "]";
+CirceCaptureCastling::CirceCaptureCastling(int origin, int target, int rebirth)
+    : CirceCapture(origin, target, rebirth) {}
+void CirceCaptureCastling::write(std::ostream& output) const {
+  output << "CirceCaptureCastling[origin=" << origin_ << ", target=" << target_
+         << ", rebirth=" << rebirth_ << "]";
 }
-void CaptureRebirthCastling::updateCastlings(std::set<int>& castlings) const {
+void CirceCaptureCastling::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
   castlings.insert(rebirth_);
 }
 
-EnPassantRebirth::EnPassantRebirth(int origin, int target, int stop,
-                                   int rebirth)
+CirceEnPassant::CirceEnPassant(int origin, int target, int stop, int rebirth)
     : EnPassant(origin, target, stop), rebirth_(rebirth) {}
-void EnPassantRebirth::write(std::ostream& output) const {
-  output << "EnPassantRebirth[origin=" << origin_ << ", target=" << target_
+void CirceEnPassant::write(std::ostream& output) const {
+  output << "CirceEnPassant[origin=" << origin_ << ", target=" << target_
          << ", stop=" << stop_ << ", rebirth=" << rebirth_ << "]";
 }
-void EnPassantRebirth::updatePieces(
+void CirceEnPassant::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[stop_]));
-  board[target_] = std::move(board[origin_]);
-  board[rebirth_] = std::move(table.top());
+  table.push(std::move(board.at(stop_)));
+  board.at(target_) = std::move(board.at(origin_));
+  board.at(rebirth_) = std::move(table.top());
   table.pop();
 }
-void EnPassantRebirth::revertPieces(
+void CirceEnPassant::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[rebirth_]));
-  board[origin_] = std::move(board[target_]);
-  board[stop_] = std::move(table.top());
+  table.push(std::move(board.at(rebirth_)));
+  board.at(origin_) = std::move(board.at(target_));
+  board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void EnPassantRebirth::preWrite(
+void CirceEnPassant::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "x" << toCode(board, target_) << " e.p." << "("
-             << board[stop_]->getCode(translate) << toCode(board, rebirth_)
+             << board.at(stop_)->getCode(translate) << toCode(board, rebirth_)
              << ")";
 }
 
-EnPassantRebirthCastling::EnPassantRebirthCastling(int origin, int target,
-                                                   int stop, int rebirth)
-    : EnPassantRebirth(origin, target, stop, rebirth) {}
-void EnPassantRebirthCastling::write(std::ostream& output) const {
-  output << "EnPassantRebirthCastling[origin=" << origin_
+CirceEnPassantCastling::CirceEnPassantCastling(int origin, int target, int stop,
+                                               int rebirth)
+    : CirceEnPassant(origin, target, stop, rebirth) {}
+void CirceEnPassantCastling::write(std::ostream& output) const {
+  output << "CirceEnPassantCastling[origin=" << origin_
          << ", target=" << target_ << ", stop=" << stop_
          << ", rebirth=" << rebirth_ << "]";
 }
-void EnPassantRebirthCastling::updateCastlings(std::set<int>& castlings) const {
+void CirceEnPassantCastling::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
   castlings.erase(stop_);
   castlings.insert(rebirth_);
 }
 
-PromotionCaptureRebirth::PromotionCaptureRebirth(int origin, int target,
-                                                 bool black, int order,
-                                                 int rebirth)
+CircePromotionCapture::CircePromotionCapture(int origin, int target, bool black,
+                                             int order, int rebirth)
     : PromotionCapture(origin, target, black, order), rebirth_(rebirth) {}
-void PromotionCaptureRebirth::write(std::ostream& output) const {
-  output << "PromotionCaptureRebirth[origin=" << origin_
-         << ", target=" << target_ << ", black=" << black_
-         << ", order=" << order_ << ", rebirth=" << rebirth_ << "]";
+void CircePromotionCapture::write(std::ostream& output) const {
+  output << "CircePromotionCapture[origin=" << origin_ << ", target=" << target_
+         << ", black=" << black_ << ", order=" << order_
+         << ", rebirth=" << rebirth_ << "]";
 }
-void PromotionCaptureRebirth::updatePieces(
+void CircePromotionCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[target_]));
-  box.at(black_).at(order_).push_back(std::move(board[origin_]));
-  board[target_] = std::move(box.at(black_).at(order_).front());
+  table.push(std::move(board.at(target_)));
+  box.at(black_).at(order_).push_back(std::move(board.at(origin_)));
+  board.at(target_) = std::move(box.at(black_).at(order_).front());
   box.at(black_).at(order_).pop_front();
-  board[rebirth_] = std::move(table.top());
+  board.at(rebirth_) = std::move(table.top());
   table.pop();
 }
-void PromotionCaptureRebirth::revertPieces(
+void CircePromotionCapture::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
     std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
     std::stack<std::unique_ptr<Piece>>& table) const {
-  table.push(std::move(board[rebirth_]));
-  box.at(black_).at(order_).push_front(std::move(board[target_]));
-  board[origin_] = std::move(box.at(black_).at(order_).back());
+  table.push(std::move(board.at(rebirth_)));
+  box.at(black_).at(order_).push_front(std::move(board.at(target_)));
+  board.at(origin_) = std::move(box.at(black_).at(order_).back());
   box.at(black_).at(order_).pop_back();
-  board[target_] = std::move(table.top());
+  board.at(target_) = std::move(table.top());
   table.pop();
 }
-void PromotionCaptureRebirth::preWrite(
+void CircePromotionCapture::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     std::ostream& lanBuilder, int translate) const {
-  lanBuilder << board[origin_]->getCode(translate) << toCode(board, origin_)
+  lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "x" << toCode(board, target_) << "="
              << box.at(black_).at(order_).front()->getCode(translate) << "("
-             << board[target_]->getCode(translate) << toCode(board, rebirth_)
+             << board.at(target_)->getCode(translate) << toCode(board, rebirth_)
              << ")";
 }
 
-PromotionCaptureRebirthCastling::PromotionCaptureRebirthCastling(
+CircePromotionCaptureCastling::CircePromotionCaptureCastling(
     int origin, int target, bool black, int order, int rebirth)
-    : PromotionCaptureRebirth(origin, target, black, order, rebirth) {}
-void PromotionCaptureRebirthCastling::write(std::ostream& output) const {
-  output << "PromotionCaptureRebirthCastling[origin=" << origin_
+    : CircePromotionCapture(origin, target, black, order, rebirth) {}
+void CircePromotionCaptureCastling::write(std::ostream& output) const {
+  output << "CircePromotionCaptureCastling[origin=" << origin_
          << ", target=" << target_ << ", black=" << black_
          << ", order=" << order_ << ", rebirth=" << rebirth_ << "]";
 }
-void PromotionCaptureRebirthCastling::updateCastlings(
+void CircePromotionCaptureCastling::updateCastlings(
     std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
@@ -183,12 +180,11 @@ void CirceMoveFactory::generateCapture(
     int target, std::vector<std::shared_ptr<Move>>& moves) const {
   int rebirth = board.at(target)->findRebirthSquare(board, target);
   if (!board.at(rebirth) || rebirth == origin) {
-    if (board[target]->isCastling()) {
+    if (board.at(target)->isCastling()) {
       moves.push_back(
-          std::make_shared<CaptureRebirthCastling>(origin, target, rebirth));
+          std::make_shared<CirceCaptureCastling>(origin, target, rebirth));
     } else {
-      moves.push_back(
-          std::make_shared<CaptureRebirth>(origin, target, rebirth));
+      moves.push_back(std::make_shared<CirceCapture>(origin, target, rebirth));
     }
   } else {
     moves.push_back(std::make_shared<Capture>(origin, target));
@@ -199,12 +195,12 @@ void CirceMoveFactory::generateEnPassant(
     int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
   int rebirth = board.at(stop)->findRebirthSquare(board, stop);
   if (!board.at(rebirth) || rebirth == origin) {
-    if (board[stop]->isCastling()) {
-      moves.push_back(std::make_shared<EnPassantRebirthCastling>(
-          origin, target, stop, rebirth));
+    if (board.at(stop)->isCastling()) {
+      moves.push_back(std::make_shared<CirceEnPassantCastling>(origin, target,
+                                                               stop, rebirth));
     } else {
       moves.push_back(
-          std::make_shared<EnPassantRebirth>(origin, target, stop, rebirth));
+          std::make_shared<CirceEnPassant>(origin, target, stop, rebirth));
     }
   } else {
     moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
@@ -218,11 +214,11 @@ void CirceMoveFactory::generatePromotionCapture(
     std::vector<std::shared_ptr<Move>>& moves) const {
   int rebirth = board.at(target)->findRebirthSquare(board, target);
   if (!board.at(rebirth) || rebirth == origin) {
-    if (board[target]->isCastling()) {
-      moves.push_back(std::make_shared<PromotionCaptureRebirthCastling>(
+    if (board.at(target)->isCastling()) {
+      moves.push_back(std::make_shared<CircePromotionCaptureCastling>(
           origin, target, black, order, rebirth));
     } else {
-      moves.push_back(std::make_shared<PromotionCaptureRebirth>(
+      moves.push_back(std::make_shared<CircePromotionCapture>(
           origin, target, black, order, rebirth));
     }
   } else {
