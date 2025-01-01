@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 Ivan Denkovski
+ * Copyright (c) 2024-2025 Ivan Denkovski
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
             << " [DEBUG]"
 #endif
 #endif
-            << " [" << __DATE__ << "] Copyright 2024 Ivan Denkovski"
+            << " [" << __DATE__ << "] Copyright 2024-2025 Ivan Denkovski"
             << std::endl;
   try {
     std::vector<moderato::Task> tasks;
