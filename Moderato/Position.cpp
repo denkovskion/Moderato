@@ -121,8 +121,8 @@ int Position::isCheck() {
   return nChecks;
 }
 bool Position::isTerminal(
-    const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves) {
-  for (const std::shared_ptr<Move>& move : generatedPseudoLegalMoves) {
+    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
+  for (const std::shared_ptr<Move>& move : pseudoLegalMoves) {
     bool result = move->make(*this);
     move->unmake(*this);
     if (result) {

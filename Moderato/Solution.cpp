@@ -28,8 +28,6 @@
 #include <iterator>
 #include <sstream>
 
-#include "Move.h"
-
 namespace moderato {
 
 std::vector<std::pair<std::pair<Play, std::string>,
@@ -80,27 +78,6 @@ std::vector<std::deque<std::pair<Play, std::string>>> toFlattened(
     }
   }
   return lines;
-}
-
-std::vector<std::deque<std::pair<Play, std::string>>> toTransformed(
-    const std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>&
-        lines,
-    Position& position, int translate) {
-  std::vector<std::deque<std::pair<Play, std::string>>> results;
-  for (auto iLine = lines.cbegin(); iLine != lines.cend(); iLine++) {
-    std::deque<std::pair<Play, std::string>> result;
-    for (auto iPoint = iLine->cbegin(); iPoint != iLine->cend(); iPoint++) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
-      std::ostringstream lanBuilder;
-      iPoint->second->make(position, pseudoLegalMoves, lanBuilder, translate);
-      result.push_back({iPoint->first, lanBuilder.str()});
-    }
-    for (auto iPoint = iLine->crbegin(); iPoint != iLine->crend(); iPoint++) {
-      iPoint->second->unmake(position);
-    }
-    results.push_back(result);
-  }
-  return results;
 }
 
 std::string toFormatted(

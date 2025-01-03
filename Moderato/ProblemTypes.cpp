@@ -121,6 +121,7 @@ void BattlePlay::analyseMax(
             analyseMin(position, stalemate, depth - score + 1,
                        pseudoLegalMovesMin, variations, translate, true,
                        includeThreats, includeShortVariations, false);
+            move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
             if (markKeys) {
               branches.push_back(
                   {{Play::KEY, lanBuilder.str()}, toFlattened(variations)});
@@ -129,6 +130,7 @@ void BattlePlay::analyseMax(
                                   toFlattened(variations)});
             }
           } else {
+            move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
             if (markKeys) {
               branches.push_back({{Play::KEY, lanBuilder.str()}, {}});
             } else {
@@ -143,6 +145,7 @@ void BattlePlay::analyseMax(
           analyseMin(position, stalemate, depth, pseudoLegalMovesMin,
                      variations, translate, includeVariations, includeThreats,
                      includeShortVariations, false);
+          move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
           branches.push_back(
               {{Play::TRY, lanBuilder.str()}, toFlattened(variations)});
         }
@@ -174,6 +177,7 @@ void BattlePlay::analyseMin(
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
+        move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
         branches.push_back({{Play::REFUTATION, lanBuilder.str()}, {}});
       }
       move->unmake(position);
@@ -220,11 +224,13 @@ void BattlePlay::analyseMin(
             if (std::find_first_of(continuations.begin(), continuations.end(),
                                    threats.begin(),
                                    threats.end()) == continuations.end()) {
+              move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
               branches.push_back({{Play::VARIATION, lanBuilder.str()},
                                   toFlattened(continuations)});
             }
           }
         } else if (!includeSetPlay) {
+          move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
           branches.push_back({{Play::REFUTATION, lanBuilder.str()}, {}});
         }
       }
@@ -442,19 +448,20 @@ void Helpmate::solve(Position& position, bool stalemate, int nMoves,
   std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
-    std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>> lines;
-    std::deque<std::pair<Play, std::shared_ptr<Move>>> line;
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>
+        branches;
     if (halfMove) {
-      analyseMax(position, stalemate, nMoves + 1, pseudoLegalMoves, line, lines,
-                 includeTempoTries, includeSetPlay, includeActualPlay,
-                 logMoves);
+      analyseMax(position, stalemate, nMoves + 1, pseudoLegalMoves, branches,
+                 translate, includeTempoTries, includeSetPlay,
+                 includeActualPlay, logMoves);
     } else {
-      analyseMin(position, stalemate, nMoves, pseudoLegalMoves, line, lines,
-                 includeTempoTries, includeSetPlay, includeActualPlay,
-                 logMoves);
+      analyseMin(position, stalemate, nMoves, pseudoLegalMoves, branches,
+                 translate, includeTempoTries, includeSetPlay,
+                 includeActualPlay, logMoves);
     }
-    std::cout << toFormatted(toTransformed(lines, position, translate))
-              << std::endl;
+    std::cout << toFormatted(toFlattened(branches)) << std::endl;
   }
   if (!includeActualPlay) {
     if (includeSetPlay) {
@@ -464,28 +471,40 @@ void Helpmate::solve(Position& position, bool stalemate, int nMoves,
     }
   }
 }
-void Helpmate::analyseMax(
+int Helpmate::analyseMax(
     Position& position, bool stalemate, int depth,
     const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
-    std::deque<std::pair<Play, std::shared_ptr<Move>>>& line,
-    std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>& lines,
-    bool includeTempoTries, bool includeSetPlay, bool includeActualPlay,
-    bool logMoves) {
-  if (includeTempoTries || includeSetPlay) {
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>&
+        branchesMax,
+    int translate, bool includeTempoTries, bool includeSetPlay,
+    bool includeActualPlay, bool logMoves) {
+  int max = 0;
+  if (includeSetPlay || includeTempoTries) {
     std::shared_ptr<Move> move = std::make_shared<NullMove>();
     std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
     if (move->make(position, pseudoLegalMovesMin)) {
-      if (includeSetPlay) {
-        line.push_back({Play::SET, move});
-      } else {
-        line.push_back({Play::TEMPO_2ND, move});
+      std::vector<
+          std::pair<std::pair<Play, std::string>,
+                    std::vector<std::deque<std::pair<Play, std::string>>>>>
+          branchesMin;
+      if (analyseMin(position, stalemate, depth - 1, pseudoLegalMovesMin,
+                     branchesMin, translate, includeTempoTries, false, true,
+                     false) != 0) {
+        max++;
+        if (includeSetPlay) {
+          branchesMax.push_back(
+              {{Play::SET, "null"}, toFlattened(branchesMin)});
+        } else {
+          branchesMax.push_back(
+              {{Play::TEMPO_2ND, "null"}, toFlattened(branchesMin)});
+        }
       }
-      analyseMin(position, stalemate, depth - 1, pseudoLegalMovesMin, line,
-                 lines, includeTempoTries, false, true, false);
-      line.pop_back();
       if (logMoves) {
         logger(std::clog) << "depth=" << depth << " move=*" << *move
-                          << " lines.size()=" << lines.size() << std::endl;
+                          << " branches.size()=" << branchesMax.size()
+                          << std::endl;
       }
     } else {
       if (includeSetPlay) {
@@ -497,27 +516,41 @@ void Helpmate::analyseMax(
   if (includeActualPlay) {
     for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
-      if (move->make(position, pseudoLegalMovesMin)) {
-        line.push_back({Play::HELP_2ND, move});
-        analyseMin(position, stalemate, depth - 1, pseudoLegalMovesMin, line,
-                   lines, includeTempoTries, false, true, false);
-        line.pop_back();
+      std::ostringstream lanBuilder;
+      if (move->make(position, pseudoLegalMovesMin, lanBuilder, translate)) {
+        std::vector<
+            std::pair<std::pair<Play, std::string>,
+                      std::vector<std::deque<std::pair<Play, std::string>>>>>
+            branchesMin;
+        if (analyseMin(position, stalemate, depth - 1, pseudoLegalMovesMin,
+                       branchesMin, translate, includeTempoTries, false, true,
+                       false) != 0) {
+          max++;
+          move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
+          branchesMax.push_back(
+              {{Play::HELP_2ND, lanBuilder.str()}, toFlattened(branchesMin)});
+        }
         if (logMoves) {
-          logger(std::clog) << "depth=" << depth << " move=*" << *move
-                            << " lines.size()=" << lines.size() << std::endl;
+          logger(std::clog)
+              << "depth=" << depth << " move=*" << *move
+              << " branches.size()=" << branchesMax.size() << std::endl;
         }
       }
       move->unmake(position);
     }
   }
+  return max;
 }
-void Helpmate::analyseMin(
+int Helpmate::analyseMin(
     Position& position, bool stalemate, int depth,
     const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
-    std::deque<std::pair<Play, std::shared_ptr<Move>>>& line,
-    std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>& lines,
-    bool includeTempoTries, bool includeSetPlay, bool includeActualPlay,
-    bool logMoves) {
+    std::vector<
+        std::pair<std::pair<Play, std::string>,
+                  std::vector<std::deque<std::pair<Play, std::string>>>>>&
+        branchesMin,
+    int translate, bool includeTempoTries, bool includeSetPlay,
+    bool includeActualPlay, bool logMoves) {
+  int min = 0;
   int nLegalMoves = 0;
   if (depth == 0) {
     for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
@@ -530,21 +563,30 @@ void Helpmate::analyseMin(
       }
     }
   } else {
-    if (includeTempoTries || includeSetPlay) {
+    if (includeSetPlay || includeTempoTries) {
       std::shared_ptr<Move> move = std::make_shared<NullMove>();
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
       if (move->make(position, pseudoLegalMovesMax)) {
-        if (includeSetPlay) {
-          line.push_back({Play::SET, move});
-        } else {
-          line.push_back({Play::TEMPO_1ST, move});
+        std::vector<
+            std::pair<std::pair<Play, std::string>,
+                      std::vector<std::deque<std::pair<Play, std::string>>>>>
+            branchesMax;
+        if (analyseMax(position, stalemate, depth, pseudoLegalMovesMax,
+                       branchesMax, translate, includeTempoTries, false, true,
+                       false) != 0) {
+          min++;
+          if (includeSetPlay) {
+            branchesMin.push_back(
+                {{Play::SET, "null"}, toFlattened(branchesMax)});
+          } else {
+            branchesMin.push_back(
+                {{Play::TEMPO_1ST, "null"}, toFlattened(branchesMax)});
+          }
         }
-        analyseMax(position, stalemate, depth, pseudoLegalMovesMax, line, lines,
-                   includeTempoTries, false, true, false);
-        line.pop_back();
         if (logMoves) {
-          logger(std::clog) << "depth=" << depth << " move=*" << *move
-                            << " lines.size()=" << lines.size() << std::endl;
+          logger(std::clog)
+              << "depth=" << depth << " move=*" << *move
+              << " branches.size()=" << branchesMin.size() << std::endl;
         }
       } else {
         if (includeSetPlay) {
@@ -556,15 +598,25 @@ void Helpmate::analyseMin(
     if (includeActualPlay) {
       for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
         std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
-        if (move->make(position, pseudoLegalMovesMax)) {
+        std::ostringstream lanBuilder;
+        if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
           nLegalMoves++;
-          line.push_back({Play::HELP_1ST, move});
-          analyseMax(position, stalemate, depth, pseudoLegalMovesMax, line,
-                     lines, includeTempoTries, false, true, false);
-          line.pop_back();
+          std::vector<
+              std::pair<std::pair<Play, std::string>,
+                        std::vector<std::deque<std::pair<Play, std::string>>>>>
+              branchesMax;
+          if (analyseMax(position, stalemate, depth, pseudoLegalMovesMax,
+                         branchesMax, translate, includeTempoTries, false, true,
+                         false) != 0) {
+            min++;
+            move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
+            branchesMin.push_back(
+                {{Play::HELP_1ST, lanBuilder.str()}, toFlattened(branchesMax)});
+          }
           if (logMoves) {
-            logger(std::clog) << "depth=" << depth << " move=*" << *move
-                              << " lines.size()=" << lines.size() << std::endl;
+            logger(std::clog)
+                << "depth=" << depth << " move=*" << *move
+                << " branches.size()=" << branchesMin.size() << std::endl;
           }
         }
         move->unmake(position);
@@ -574,10 +626,13 @@ void Helpmate::analyseMin(
   if (nLegalMoves == 0) {
     if (includeActualPlay) {
       if (evaluateTerminalNode(position, stalemate)) {
-        lines.push_back(line);
+        min = 1;
+      } else {
+        min = 0;
       }
     }
   }
+  return min;
 }
 void Helpmate::write(std::ostream& output) const {
   output << "Helpmate[position=" << position_ << ", stalemate=" << stalemate_
@@ -601,6 +656,7 @@ void MateSearch::solve(Position& position, int nMoves, int translate) {
         for (int depth = 1; depth <= nMoves; depth++) {
           int score = searchMin(position, depth, pseudoLegalMovesMin);
           if (score > 0) {
+            move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
             points.push_back({"+M" + std::to_string(depth), lanBuilder.str()});
             break;
           }

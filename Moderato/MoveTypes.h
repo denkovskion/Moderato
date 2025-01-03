@@ -42,10 +42,6 @@ class QuietMove : public NullMove {
                 int translate) const override;
   virtual void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                         std::ostream& lanBuilder, int translate) const;
-  void postWrite(
-      Position& position,
-      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
-      std::ostream& lanBuilder) const override;
 
  protected:
   const int origin_;
@@ -53,6 +49,9 @@ class QuietMove : public NullMove {
 
  public:
   QuietMove(int origin, int target);
+  void postWrite(Position& position,
+                 const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+                 std::ostream& lanBuilder) const override;
 };
 
 class Capture : public QuietMove {

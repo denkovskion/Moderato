@@ -113,20 +113,24 @@ class Helpmate : public HelpProblem, MateProblem {
   void solve(Position& position, bool stalemate, int nMoves, bool halfMove,
              bool includeSetPlay, bool includeTempoTries, int translate,
              bool logMoves);
-  void analyseMax(
+  int analyseMax(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
-      std::deque<std::pair<Play, std::shared_ptr<Move>>>& line,
-      std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>& lines,
-      bool includeTempoTries, bool includeSetPlay, bool includeActualPlay,
-      bool logMoves);
-  void analyseMin(
+      std::vector<
+          std::pair<std::pair<Play, std::string>,
+                    std::vector<std::deque<std::pair<Play, std::string>>>>>&
+          branchesMax,
+      int translate, bool includeTempoTries, bool includeSetPlay,
+      bool includeActualPlay, bool logMoves);
+  int analyseMin(
       Position& position, bool stalemate, int depth,
       const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
-      std::deque<std::pair<Play, std::shared_ptr<Move>>>& line,
-      std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>& lines,
-      bool includeTempoTries, bool includeSetPlay, bool includeActualPlay,
-      bool logMoves);
+      std::vector<
+          std::pair<std::pair<Play, std::string>,
+                    std::vector<std::deque<std::pair<Play, std::string>>>>>&
+          branchesMin,
+      int translate, bool includeTempoTries, bool includeSetPlay,
+      bool includeActualPlay, bool logMoves);
   void write(std::ostream& output) const override;
 
  public:

@@ -44,10 +44,6 @@ class Move {
   virtual void revertState(Position& position) const = 0;
   virtual void preWrite(Position& position, std::ostream& lanBuilder,
                         int translate) const = 0;
-  virtual void postWrite(
-      Position& position,
-      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
-      std::ostream& lanBuilder) const = 0;
 
  public:
   friend std::ostream& operator<<(std::ostream& output, const Move& move);
@@ -58,6 +54,10 @@ class Move {
             std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const;
   bool make(Position& position) const;
   void unmake(Position& position) const;
+  virtual void postWrite(
+      Position& position,
+      const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+      std::ostream& lanBuilder) const = 0;
 };
 
 class NullMove : public Move {
@@ -77,10 +77,11 @@ class NullMove : public Move {
       std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& memory) const;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
-  void postWrite(
-      Position& position,
-      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
-      std::ostream& lanBuilder) const override;
+
+ public:
+  void postWrite(Position& position,
+                 const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+                 std::ostream& lanBuilder) const override;
 };
 
 }  // namespace moderato

@@ -62,10 +62,10 @@ void QuietMove::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
 }
 void QuietMove::postWrite(
     Position& position,
-    const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
     std::ostream& lanBuilder) const {
   int nChecks = position.isCheck();
-  bool terminal = position.isTerminal(generatedPseudoLegalMoves);
+  bool terminal = position.isTerminal(pseudoLegalMoves);
   if (terminal) {
     if (nChecks > 0) {
       if (nChecks > 1) {

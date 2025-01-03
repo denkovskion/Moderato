@@ -25,15 +25,11 @@
 #pragma once
 
 #include <deque>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace moderato {
-
-class Move;
-class Position;
 
 enum class Play {
   SET,
@@ -55,11 +51,6 @@ std::vector<std::deque<std::pair<Play, std::string>>> toFlattened(
         std::pair<std::pair<Play, std::string>,
                   std::vector<std::deque<std::pair<Play, std::string>>>>>&
         branches);
-
-std::vector<std::deque<std::pair<Play, std::string>>> toTransformed(
-    const std::vector<std::deque<std::pair<Play, std::shared_ptr<Move>>>>&
-        lines,
-    Position& position, int translate);
 
 std::string toFormatted(
     const std::vector<std::deque<std::pair<Play, std::string>>>& lines);

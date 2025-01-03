@@ -39,22 +39,20 @@ bool Move::make(Position& position,
   bool result = preMake(position);
   updatePieces(position);
   updateState(position);
-  result = position.isLegal(pseudoLegalMoves) && result;
-  postWrite(position, pseudoLegalMoves, lanBuilder);
-  return result;
+  return result && position.isLegal(pseudoLegalMoves);
 }
 bool Move::make(Position& position,
                 std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const {
   bool result = preMake(position);
   updatePieces(position);
   updateState(position);
-  return position.isLegal(pseudoLegalMoves) && result;
+  return result && position.isLegal(pseudoLegalMoves);
 }
 bool Move::make(Position& position) const {
   bool result = preMake(position);
   updatePieces(position);
   updateState(position);
-  return position.isLegal() && result;
+  return result && position.isLegal();
 }
 void Move::unmake(Position& position) const {
   revertState(position);
@@ -98,7 +96,7 @@ void NullMove::preWrite(Position& position, std::ostream& lanBuilder,
 }
 void NullMove::postWrite(
     Position& position,
-    const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves,
+    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
     std::ostream& lanBuilder) const {}
 
 }  // namespace moderato

@@ -58,8 +58,7 @@ class Position {
   bool isLegal(std::vector<std::shared_ptr<Move>>& pseudoLegalMoves);
   bool isLegal();
   int isCheck();
-  bool isTerminal(
-      const std::vector<std::shared_ptr<Move>>& generatedPseudoLegalMoves);
+  bool isTerminal(const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves);
 
   friend std::ostream& operator<<(std::ostream& output,
                                   const Position& position);
