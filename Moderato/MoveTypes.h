@@ -49,9 +49,6 @@ class QuietMove : public NullMove {
 
  public:
   QuietMove(int origin, int target);
-  void postWrite(Position& position,
-                 const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
-                 std::ostream& lanBuilder) const override;
 };
 
 class Capture : public QuietMove {

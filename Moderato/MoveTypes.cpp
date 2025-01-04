@@ -60,31 +60,6 @@ void QuietMove::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
   lanBuilder << board.at(origin_)->getCode(translate) << toCode(board, origin_)
              << "-" << toCode(board, target_);
 }
-void QuietMove::postWrite(
-    Position& position,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
-    std::ostream& lanBuilder) const {
-  int nChecks = position.isCheck();
-  bool terminal = position.isTerminal(pseudoLegalMoves);
-  if (terminal) {
-    if (nChecks > 0) {
-      if (nChecks > 1) {
-        for (int checkNo = 0; checkNo < nChecks; checkNo++) {
-          lanBuilder << "+";
-        }
-      }
-      lanBuilder << "#";
-    } else {
-      lanBuilder << "=";
-    }
-  } else {
-    if (nChecks > 0) {
-      for (int checkNo = 0; checkNo < nChecks; checkNo++) {
-        lanBuilder << "+";
-      }
-    }
-  }
-}
 
 Capture::Capture(int origin, int target) : QuietMove(origin, target) {}
 void Capture::write(std::ostream& output) const {

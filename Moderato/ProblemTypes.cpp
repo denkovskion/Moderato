@@ -121,7 +121,7 @@ void BattlePlay::analyseMax(
             analyseMin(position, stalemate, depth - score + 1,
                        pseudoLegalMovesMin, variations, translate, true,
                        includeThreats, includeShortVariations, false);
-            move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
+            postWrite(position, pseudoLegalMovesMin, lanBuilder);
             if (markKeys) {
               branches.push_back(
                   {{Play::KEY, lanBuilder.str()}, toFlattened(variations)});
@@ -130,7 +130,7 @@ void BattlePlay::analyseMax(
                                   toFlattened(variations)});
             }
           } else {
-            move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
+            postWrite(position, pseudoLegalMovesMin, lanBuilder);
             if (markKeys) {
               branches.push_back({{Play::KEY, lanBuilder.str()}, {}});
             } else {
@@ -145,7 +145,7 @@ void BattlePlay::analyseMax(
           analyseMin(position, stalemate, depth, pseudoLegalMovesMin,
                      variations, translate, includeVariations, includeThreats,
                      includeShortVariations, false);
-          move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
+          postWrite(position, pseudoLegalMovesMin, lanBuilder);
           branches.push_back(
               {{Play::TRY, lanBuilder.str()}, toFlattened(variations)});
         }
@@ -177,7 +177,7 @@ void BattlePlay::analyseMin(
       std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
-        move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
+        postWrite(position, pseudoLegalMovesMax, lanBuilder);
         branches.push_back({{Play::REFUTATION, lanBuilder.str()}, {}});
       }
       move->unmake(position);
@@ -224,13 +224,13 @@ void BattlePlay::analyseMin(
             if (std::find_first_of(continuations.begin(), continuations.end(),
                                    threats.begin(),
                                    threats.end()) == continuations.end()) {
-              move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
+              postWrite(position, pseudoLegalMovesMax, lanBuilder);
               branches.push_back({{Play::VARIATION, lanBuilder.str()},
                                   toFlattened(continuations)});
             }
           }
         } else if (!includeSetPlay) {
-          move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
+          postWrite(position, pseudoLegalMovesMax, lanBuilder);
           branches.push_back({{Play::REFUTATION, lanBuilder.str()}, {}});
         }
       }
@@ -526,7 +526,7 @@ int Helpmate::analyseMax(
                        branchesMin, translate, includeTempoTries, false, true,
                        false) != 0) {
           max++;
-          move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
+          postWrite(position, pseudoLegalMovesMin, lanBuilder);
           branchesMax.push_back(
               {{Play::HELP_2ND, lanBuilder.str()}, toFlattened(branchesMin)});
         }
@@ -609,7 +609,7 @@ int Helpmate::analyseMin(
                          branchesMax, translate, includeTempoTries, false, true,
                          false) != 0) {
             min++;
-            move->postWrite(position, pseudoLegalMovesMax, lanBuilder);
+            postWrite(position, pseudoLegalMovesMax, lanBuilder);
             branchesMin.push_back(
                 {{Play::HELP_1ST, lanBuilder.str()}, toFlattened(branchesMax)});
           }
@@ -656,7 +656,7 @@ void MateSearch::solve(Position& position, int nMoves, int translate) {
         for (int depth = 1; depth <= nMoves; depth++) {
           int score = searchMin(position, depth, pseudoLegalMovesMin);
           if (score > 0) {
-            move->postWrite(position, pseudoLegalMovesMin, lanBuilder);
+            postWrite(position, pseudoLegalMovesMin, lanBuilder);
             points.push_back({"+M" + std::to_string(depth), lanBuilder.str()});
             break;
           }

@@ -54,10 +54,6 @@ class Move {
             std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const;
   bool make(Position& position) const;
   void unmake(Position& position) const;
-  virtual void postWrite(
-      Position& position,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
-      std::ostream& lanBuilder) const = 0;
 };
 
 class NullMove : public Move {
@@ -77,11 +73,10 @@ class NullMove : public Move {
       std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& memory) const;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
-
- public:
-  void postWrite(Position& position,
-                 const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
-                 std::ostream& lanBuilder) const override;
 };
+
+void postWrite(Position& position,
+               const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+               std::ostream& lanBuilder);
 
 }  // namespace moderato

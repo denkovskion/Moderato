@@ -94,9 +94,30 @@ void NullMove::preWrite(Position& position, std::ostream& lanBuilder,
                         int translate) const {
   lanBuilder << "null";
 }
-void NullMove::postWrite(
-    Position& position,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
-    std::ostream& lanBuilder) const {}
+
+void postWrite(Position& position,
+               const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+               std::ostream& lanBuilder) {
+  int nChecks = position.isCheck();
+  bool terminal = position.isTerminal(pseudoLegalMoves);
+  if (terminal) {
+    if (nChecks > 0) {
+      if (nChecks > 1) {
+        for (int checkNo = 0; checkNo < nChecks; checkNo++) {
+          lanBuilder << "+";
+        }
+      }
+      lanBuilder << "#";
+    } else {
+      lanBuilder << "=";
+    }
+  } else {
+    if (nChecks > 0) {
+      for (int checkNo = 0; checkNo < nChecks; checkNo++) {
+        lanBuilder << "+";
+      }
+    }
+  }
+}
 
 }  // namespace moderato
