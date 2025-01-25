@@ -28,7 +28,7 @@
 
 namespace moderato {
 
-class King : public Piece, private Leaper {
+class King : public Piece, Leaper {
   static std::vector<int>& leaps(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getLeaps(
@@ -58,7 +58,7 @@ class King : public Piece, private Leaper {
   std::string getCode(int translate) const override;
 };
 
-class Queen : public Piece, private Rider {
+class Queen : public Piece, Rider {
   static std::vector<int>& rides(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getRides(
@@ -86,7 +86,7 @@ class Queen : public Piece, private Rider {
   std::string getCode(int translate) const override;
 };
 
-class Rook : public Piece, private Rider {
+class Rook : public Piece, Rider {
   static std::vector<int>& rides(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getRides(
@@ -115,7 +115,7 @@ class Rook : public Piece, private Rider {
   std::string getCode(int translate) const override;
 };
 
-class Bishop : public Piece, private Rider {
+class Bishop : public Piece, Rider {
   static std::vector<int>& rides(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getRides(
@@ -143,7 +143,7 @@ class Bishop : public Piece, private Rider {
   std::string getCode(int translate) const override;
 };
 
-class Knight : public Piece, private Leaper {
+class Knight : public Piece, Leaper {
   static std::vector<int>& leaps(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getLeaps(

@@ -248,62 +248,61 @@ bool Pawn::generateMoves(
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
     std::vector<std::shared_ptr<Move>>& moves) const {
-  int directions[] = {black_ ? -17 : -15, black_ ? -1 : 1, black_ ? 15 : 17};
+  int directions[] = {black_ ? -17 : -15, black_ ? 15 : 17};
   for (int direction : directions) {
     int target = origin + direction;
     if (!(target & 136)) {
-      if (target / 16 != origin / 16) {
-        const std::unique_ptr<Piece>& piece = board.at(target);
-        if (piece) {
-          if (piece->isBlack() != black_) {
-            if (piece->isRoyal()) {
-              return false;
-            }
-            if (origin % 16 == (black_ ? 1 : 6)) {
-              const std::map<int, std::deque<std::unique_ptr<Piece>>>&
-                  promotions = box.at(black_);
-              for (const std::pair<const int,
-                                   std::deque<std::unique_ptr<Piece>>>&
-                       promotion : promotions) {
-                int order = promotion.first;
-                moveFactory.generatePromotionCapture(board, box, origin, target,
-                                                     black_, order, moves);
-              }
-            } else {
-              moveFactory.generateCapture(board, origin, target, moves);
-            }
+      const std::unique_ptr<Piece>& piece = board.at(target);
+      if (piece) {
+        if (piece->isBlack() != black_) {
+          if (piece->isRoyal()) {
+            return false;
           }
-        } else {
-          const std::shared_ptr<int>& enPassant = state.second;
-          if (enPassant && target == *enPassant) {
-            int stop = target + (black_ ? 1 : -1);
-            if (board.at(stop)->isRoyal()) {
-              return false;
-            }
-            moveFactory.generateEnPassant(board, origin, target, stop, moves);
-          }
-        }
-      } else {
-        if (!board.at(target)) {
           if (origin % 16 == (black_ ? 1 : 6)) {
             const std::map<int, std::deque<std::unique_ptr<Piece>>>&
                 promotions = box.at(black_);
             for (const std::pair<const int, std::deque<std::unique_ptr<Piece>>>&
                      promotion : promotions) {
               int order = promotion.first;
-              moveFactory.generatePromotion(board, box, origin, target, black_,
-                                            order, moves);
+              moveFactory.generatePromotionCapture(board, box, origin, target,
+                                                   black_, order, moves);
             }
           } else {
-            moveFactory.generateQuietMove(board, origin, target, moves);
-            if (origin % 16 == (black_ ? 6 : 1)) {
-              target = origin + 2 * direction;
-              if (!board.at(target)) {
-                int stop = origin + direction;
-                moveFactory.generateDoubleStep(board, origin, target, stop,
-                                               moves);
-              }
-            }
+            moveFactory.generateCapture(board, origin, target, moves);
+          }
+        }
+      } else {
+        const std::shared_ptr<int>& enPassant = state.second;
+        if (enPassant && target == *enPassant) {
+          int stop = target + (black_ ? 1 : -1);
+          if (board.at(stop)->isRoyal()) {
+            return false;
+          }
+          moveFactory.generateEnPassant(board, origin, target, stop, moves);
+        }
+      }
+    }
+  }
+  int direction = black_ ? -1 : 1;
+  int target = origin + direction;
+  if (!(target & 136)) {
+    if (!board.at(target)) {
+      if (origin % 16 == (black_ ? 1 : 6)) {
+        const std::map<int, std::deque<std::unique_ptr<Piece>>>& promotions =
+            box.at(black_);
+        for (const std::pair<const int, std::deque<std::unique_ptr<Piece>>>&
+                 promotion : promotions) {
+          int order = promotion.first;
+          moveFactory.generatePromotion(board, box, origin, target, black_,
+                                        order, moves);
+        }
+      } else {
+        moveFactory.generateQuietMove(board, origin, target, moves);
+        if (origin % 16 == (black_ ? 6 : 1)) {
+          target = origin + 2 * direction;
+          if (!board.at(target)) {
+            int stop = origin + direction;
+            moveFactory.generateDoubleStep(board, origin, target, stop, moves);
           }
         }
       }
@@ -317,7 +316,7 @@ bool Pawn::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state,
     int origin) const {
-  int directions[] = {(black_ ? -17 : -15), (black_ ? 15 : 17)};
+  int directions[] = {black_ ? -17 : -15, black_ ? 15 : 17};
   for (int direction : directions) {
     int target = origin + direction;
     if (!(target & 136)) {

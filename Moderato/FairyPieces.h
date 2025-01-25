@@ -37,7 +37,7 @@ class FairyPiece : public Piece {
                         int square) const override;
 };
 
-class Grasshopper : public FairyPiece, private Hopper {
+class Grasshopper : public FairyPiece, Hopper {
   static std::vector<int>& hops(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getHops(
@@ -63,7 +63,7 @@ class Grasshopper : public FairyPiece, private Hopper {
   std::string getCode(int translate) const override;
 };
 
-class Nightrider : public FairyPiece, private Rider {
+class Nightrider : public FairyPiece, Rider {
   static std::vector<int>& rides(
       const std::array<std::unique_ptr<Piece>, 128>& board);
   const std::vector<int>& getRides(
