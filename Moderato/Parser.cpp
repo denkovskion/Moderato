@@ -52,7 +52,8 @@ enum PieceType {
   Knight,
   Pawn,
   Grasshopper,
-  Nightrider
+  Nightrider,
+  Amazon
 };
 enum Colour { White, Black };
 struct Piece {
@@ -299,15 +300,16 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                  std::regex_match(
                      popeyeToken,
                      std::regex(
-                         !german ? !french ? "(k|q|r|b|s|p|g|n)(([a-h][1-8])+)"
-                                           : "(r|d|t|f|c|p|s|n)(([a-h][1-8])+)"
-                                 : "(k|d|t|l|s|b|g|n)(([a-h][1-8])+)"))) {
+                         !german ? !french
+                                       ? "(k|q|r|b|s|p|g|n|am)(([a-h][1-8])+)"
+                                       : "(r|d|t|f|c|p|s|n|am)(([a-h][1-8])+)"
+                                 : "(k|d|t|l|s|b|g|n|am)(([a-h][1-8])+)"))) {
         std::smatch pieceMatch;
         std::regex_match(
             popeyeToken, pieceMatch,
-            std::regex(!german ? !french ? "(k|q|r|b|s|p|g|n)(([a-h][1-8])+)"
-                                         : "(r|d|t|f|c|p|s|n)(([a-h][1-8])+)"
-                               : "(k|d|t|l|s|b|g|n)(([a-h][1-8])+)"));
+            std::regex(!german ? !french ? "(k|q|r|b|s|p|g|n|am)(([a-h][1-8])+)"
+                                         : "(r|d|t|f|c|p|s|n|am)(([a-h][1-8])+)"
+                               : "(k|d|t|l|s|b|g|n|am)(([a-h][1-8])+)"));
         popeye::PieceType pieceType =
             pieceMatch[1] == (!german ? !french ? "q" : "d" : "d")
                 ? popeye::Queen
@@ -323,6 +325,8 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                 ? popeye::Grasshopper
             : pieceMatch[1] == (!german ? !french ? "n" : "n" : "n")
                 ? popeye::Nightrider
+            : pieceMatch[1] == (!german ? !french ? "am" : "am" : "am")
+                ? popeye::Amazon
                 : popeye::King;
         std::string squaresSubsequence = pieceMatch[2];
         for (std::smatch squareMatch; std::regex_search(
@@ -627,6 +631,8 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
       board.at(square) = std::make_unique<Grasshopper>(black);
     } else if (piece.pieceType == popeye::Nightrider) {
       board.at(square) = std::make_unique<Nightrider>(black);
+    } else if (piece.pieceType == popeye::Amazon) {
+      board.at(square) = std::make_unique<Amazon>(black);
     } else {
       board.at(square) = std::make_unique<King>(black);
     }
@@ -675,6 +681,8 @@ void convertProblem(const popeye::Problem& specification, int inputLanguage,
                 std::make_unique<Grasshopper>(black));
           } else if (promotionType == popeye::Nightrider) {
             box[black][++order].push_front(std::make_unique<Nightrider>(black));
+          } else if (promotionType == popeye::Amazon) {
+            box[black][++order].push_front(std::make_unique<Amazon>(black));
           } else {
             box[black][++order].push_front(std::make_unique<Queen>(black));
           }

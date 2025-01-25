@@ -34,9 +34,11 @@ int FairyPiece::findRebirthSquare(
 
 Grasshopper::Grasshopper(bool black) : FairyPiece(black) {}
 Nightrider::Nightrider(bool black) : FairyPiece(black) {}
+Amazon::Amazon(bool black) : FairyPiece(black) {}
 
 bool Grasshopper::isBlack() const { return Piece::isBlack(); }
 bool Nightrider::isBlack() const { return Piece::isBlack(); }
+bool Amazon::isBlack() const { return Piece::isBlack(); }
 
 std::vector<int>& Grasshopper::hops(
     const std::array<std::unique_ptr<Piece>, 128>& board) {
@@ -92,6 +94,44 @@ bool Nightrider::generateMoves(
   return Rider::generateMoves(board, origin);
 }
 
+std::vector<int>& Amazon::rides(
+    const std::array<std::unique_ptr<Piece>, 128>& board) {
+  static std::vector<int> rides = {-17, -16, -15, -1, 1, 15, 16, 17};
+  return rides;
+}
+const std::vector<int>& Amazon::getRides(
+    const std::array<std::unique_ptr<Piece>, 128>& board) const {
+  return rides(board);
+}
+std::vector<int>& Amazon::leaps(
+    const std::array<std::unique_ptr<Piece>, 128>& board) {
+  static std::vector<int> leaps = {-33, -31, -18, -14, 14, 18, 31, 33};
+  return leaps;
+}
+const std::vector<int>& Amazon::getLeaps(
+    const std::array<std::unique_ptr<Piece>, 128>& board) const {
+  return leaps(board);
+}
+bool Amazon::generateMoves(
+    const std::array<std::unique_ptr<Piece>, 128>& board,
+    const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+        box,
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory,
+    std::vector<std::shared_ptr<Move>>& moves) const {
+  return Rider::generateMoves(board, origin, moveFactory, moves) &&
+         Leaper::generateMoves(board, origin, moveFactory, moves);
+}
+bool Amazon::generateMoves(
+    const std::array<std::unique_ptr<Piece>, 128>& board,
+    const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+        box,
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
+    int origin) const {
+  return Rider::generateMoves(board, origin) &&
+         Leaper::generateMoves(board, origin);
+}
+
 std::string Grasshopper::getCode(int translate) const {
   return translate == GERMAN    ? "G"
          : translate == FRENCH  ? "S"
@@ -104,8 +144,15 @@ std::string Nightrider::getCode(int translate) const {
          : translate == ENGLISH ? "N"
                                 : getName();
 }
+std::string Amazon::getCode(int translate) const {
+  return translate == GERMAN    ? "AM"
+         : translate == FRENCH  ? "AM"
+         : translate == ENGLISH ? "AM"
+                                : getName();
+}
 
 std::string Grasshopper::getName() const { return "Grasshopper"; }
 std::string Nightrider::getName() const { return "Nightrider"; }
+std::string Amazon::getName() const { return "Amazon"; }
 
 }  // namespace moderato

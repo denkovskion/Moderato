@@ -89,4 +89,34 @@ class Nightrider : public FairyPiece, Rider {
   std::string getCode(int translate) const override;
 };
 
+class Amazon : public FairyPiece, Rider, Leaper {
+  static std::vector<int>& rides(
+      const std::array<std::unique_ptr<Piece>, 128>& board);
+  const std::vector<int>& getRides(
+      const std::array<std::unique_ptr<Piece>, 128>& board) const override;
+  static std::vector<int>& leaps(
+      const std::array<std::unique_ptr<Piece>, 128>& board);
+  const std::vector<int>& getLeaps(
+      const std::array<std::unique_ptr<Piece>, 128>& board) const override;
+  std::string getName() const override;
+
+ public:
+  Amazon(bool black);
+  bool isBlack() const override;
+  bool generateMoves(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generateMoves(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      const std::pair<std::set<int>, std::shared_ptr<int>>& state,
+      int origin) const override;
+  std::string getCode(int translate) const override;
+};
+
 }  // namespace moderato
