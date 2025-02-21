@@ -341,35 +341,46 @@ bool Pawn::generateMoves(
   return true;
 }
 
-std::string King::getCode(int translate) const {
+std::string King::code(int translate) {
   return translate == GERMAN    ? "K"
          : translate == FRENCH  ? "R"
          : translate == ENGLISH ? "K"
                                 : "K";
 }
-std::string Queen::getCode(int translate) const {
+std::string King::getCode(int translate) const { return code(translate); }
+std::string Queen::code(int translate) {
   return translate == GERMAN    ? "D"
          : translate == FRENCH  ? "D"
          : translate == ENGLISH ? "Q"
                                 : "Q";
 }
-std::string Rook::getCode(int translate) const {
+std::string Queen::getCode(int translate) const { return code(translate); }
+std::string Rook::code(int translate) {
   return translate == GERMAN    ? "T"
          : translate == FRENCH  ? "T"
          : translate == ENGLISH ? "R"
                                 : "R";
 }
-std::string Bishop::getCode(int translate) const {
+std::string Rook::getCode(int translate) const { return code(translate); }
+std::string Bishop::code(int translate) {
   return translate == GERMAN    ? "L"
          : translate == FRENCH  ? "F"
          : translate == ENGLISH ? "B"
                                 : "B";
 }
-std::string Knight::getCode(int translate) const {
+std::string Bishop::getCode(int translate) const { return code(translate); }
+std::string Knight::code(int translate) {
   return translate == GERMAN    ? "S"
          : translate == FRENCH  ? "C"
          : translate == ENGLISH ? "S"
                                 : "N";
+}
+std::string Knight::getCode(int translate) const { return code(translate); }
+std::string Pawn::code(int translate) {
+  return translate == GERMAN    ? "B"
+         : translate == FRENCH  ? "P"
+         : translate == ENGLISH ? "P"
+                                : "P";
 }
 std::string Pawn::getCode(int translate) const { return ""; }
 

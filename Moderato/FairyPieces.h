@@ -60,6 +60,7 @@ class Grasshopper : public FairyPiece, Hopper {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -86,6 +87,7 @@ class Nightrider : public FairyPiece, Rider {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -116,6 +118,7 @@ class Amazon : public FairyPiece, Rider, Leaper {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 

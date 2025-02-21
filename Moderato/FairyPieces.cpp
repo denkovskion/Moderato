@@ -132,24 +132,29 @@ bool Amazon::generateMoves(
          Leaper::generateMoves(board, origin);
 }
 
-std::string Grasshopper::getCode(int translate) const {
+std::string Grasshopper::code(int translate) {
   return translate == GERMAN    ? "G"
          : translate == FRENCH  ? "S"
          : translate == ENGLISH ? "G"
-                                : getName();
+                                : "Grasshopper";
 }
-std::string Nightrider::getCode(int translate) const {
+std::string Grasshopper::getCode(int translate) const {
+  return code(translate);
+}
+std::string Nightrider::code(int translate) {
   return translate == GERMAN    ? "N"
          : translate == FRENCH  ? "N"
          : translate == ENGLISH ? "N"
-                                : getName();
+                                : "Nightrider";
 }
-std::string Amazon::getCode(int translate) const {
+std::string Nightrider::getCode(int translate) const { return code(translate); }
+std::string Amazon::code(int translate) {
   return translate == GERMAN    ? "AM"
          : translate == FRENCH  ? "AM"
          : translate == ENGLISH ? "AM"
-                                : getName();
+                                : "Amazon";
 }
+std::string Amazon::getCode(int translate) const { return code(translate); }
 
 std::string Grasshopper::getName() const { return "Grasshopper"; }
 std::string Nightrider::getName() const { return "Nightrider"; }

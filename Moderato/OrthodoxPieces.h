@@ -55,6 +55,7 @@ class King : public Piece, Leaper {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -83,6 +84,7 @@ class Queen : public Piece, Rider {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -112,6 +114,7 @@ class Rook : public Piece, Rider {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -140,6 +143,7 @@ class Bishop : public Piece, Rider {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -168,6 +172,7 @@ class Knight : public Piece, Leaper {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
@@ -191,6 +196,7 @@ class Pawn : public Piece {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state,
       int origin) const override;
+  static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
 
