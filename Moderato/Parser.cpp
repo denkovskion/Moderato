@@ -188,21 +188,20 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
   bool hasNextLine = true;
   for (std::string line; hasNextLine && std::getline(input, line);) {
     std::istringstream tokenInput(line);
-    if (transitions.empty()) {
-      transitions = {kEpdForsyth};
-    }
     bool hasNextToken = true;
     for (std::string token; hasNextToken && tokenInput >> token;) {
       if (transitions.count(kPopeyeLanguage)) {
         int languages[] = {Piece::ENGLISH, Piece::FRENCH, Piece::GERMAN};
-        const int* iLanguage =
-            std::find_if(std::cbegin(languages), std::cend(languages),
-                         [&token](int language) {
-                           std::string directive;
-                           translateTerm(popeyeDirectives(), language,
-                                         Piece::ENGLISH, token, directive);
-                           return directive == "BeginProblem";
-                         });
+        const int* iLanguage = std::find_if(
+            std::cbegin(languages), std::cend(languages),
+            [&token](int language) {
+              std::string directive;
+              if (translateTerm(popeyeDirectives(), language, Piece::ENGLISH,
+                                token, directive)) {
+                return directive == "BeginProblem";
+              }
+              return false;
+            });
         if (iLanguage != std::cend(languages)) {
           inputLanguage = *iLanguage;
           transitions = {kPopeyeCommand, kPopeyeDirective};
@@ -370,47 +369,49 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
       }
       if (transitions.count(kPopeyeWhite) || transitions.count(kPopeyeBlack)) {
         std::string pieceTypePattern;
-        translatePattern(pieceTypeCodes(), Piece::ENGLISH, inputLanguage,
-                         "[Kk]|[Qq]|[Rr]|[Bb]|[Ss]|[Pp]|[Gg]|[Nn]|[Aa][Mm]",
-                         pieceTypePattern);
-        std::string piecePattern =
-            "(" + pieceTypePattern + ")(([A-Ha-h][1-8])+)";
-        if (std::regex_match(token, std::regex(piecePattern))) {
-          popeye::Colour colour =
-              transitions.count(kPopeyeBlack) ? popeye::Black : popeye::White;
-          std::smatch pieceMatch;
-          std::regex_match(token, pieceMatch, std::regex(piecePattern));
-          std::string pieceTypeCode;
-          translateTerm(pieceTypeCodes(), inputLanguage, Piece::ENGLISH,
-                        pieceMatch[1].str(), pieceTypeCode);
-          popeye::PieceType pieceType =
-              pieceTypeCode == "Q"    ? popeye::Queen
-              : pieceTypeCode == "R"  ? popeye::Rook
-              : pieceTypeCode == "B"  ? popeye::Bishop
-              : pieceTypeCode == "S"  ? popeye::Knight
-              : pieceTypeCode == "P"  ? popeye::Pawn
-              : pieceTypeCode == "G"  ? popeye::Grasshopper
-              : pieceTypeCode == "N"  ? popeye::Nightrider
-              : pieceTypeCode == "AM" ? popeye::Amazon
-                                      : popeye::King;
-          std::string squaresSubsequence = pieceMatch[2];
-          for (std::smatch squareMatch;
-               std::regex_search(squaresSubsequence, squareMatch,
-                                 std::regex("[A-Ha-h][1-8]"));) {
-            popeye::File file =
-                static_cast<popeye::File>(std::islower(squareMatch.str()[0])
-                                              ? squareMatch.str()[0] - 'a'
-                                              : squareMatch.str()[0] - 'A');
-            popeye::Rank rank =
-                static_cast<popeye::Rank>(squareMatch.str()[1] - '1');
-            popeye::Square square = {file, rank};
-            problem.pieces.push_back({square, pieceType, colour});
-            squaresSubsequence = squareMatch.suffix();
-          };
-          transitions = {
-              transitions.count(kPopeyeBlack) ? kPopeyeBlack : kPopeyeWhite,
-              kPopeyeColour, kPopeyeCommand, kPopeyeDirective};
-          continue;
+        if (translatePattern(pieceTypeCodes(), Piece::ENGLISH, inputLanguage,
+                             "[Kk]|[Qq]|[Rr]|[Bb]|[Ss]|[Pp]|[Gg]|[Nn]|[Aa][Mm]",
+                             pieceTypePattern)) {
+          std::string piecePattern =
+              "(" + pieceTypePattern + ")(([A-Ha-h][1-8])+)";
+          if (std::regex_match(token, std::regex(piecePattern))) {
+            popeye::Colour colour =
+                transitions.count(kPopeyeBlack) ? popeye::Black : popeye::White;
+            std::smatch pieceMatch;
+            std::regex_match(token, pieceMatch, std::regex(piecePattern));
+            std::string pieceTypeCode;
+            if (translateTerm(pieceTypeCodes(), inputLanguage, Piece::ENGLISH,
+                              pieceMatch[1].str(), pieceTypeCode)) {
+              popeye::PieceType pieceType =
+                  pieceTypeCode == "Q"    ? popeye::Queen
+                  : pieceTypeCode == "R"  ? popeye::Rook
+                  : pieceTypeCode == "B"  ? popeye::Bishop
+                  : pieceTypeCode == "S"  ? popeye::Knight
+                  : pieceTypeCode == "P"  ? popeye::Pawn
+                  : pieceTypeCode == "G"  ? popeye::Grasshopper
+                  : pieceTypeCode == "N"  ? popeye::Nightrider
+                  : pieceTypeCode == "AM" ? popeye::Amazon
+                                          : popeye::King;
+              std::string squaresSubsequence = pieceMatch[2];
+              for (std::smatch squareMatch;
+                   std::regex_search(squaresSubsequence, squareMatch,
+                                     std::regex("[A-Ha-h][1-8]"));) {
+                popeye::File file =
+                    static_cast<popeye::File>(std::islower(squareMatch.str()[0])
+                                                  ? squareMatch.str()[0] - 'a'
+                                                  : squareMatch.str()[0] - 'A');
+                popeye::Rank rank =
+                    static_cast<popeye::Rank>(squareMatch.str()[1] - '1');
+                popeye::Square square = {file, rank};
+                problem.pieces.push_back({square, pieceType, colour});
+                squaresSubsequence = squareMatch.suffix();
+              };
+              transitions = {
+                  transitions.count(kPopeyeBlack) ? kPopeyeBlack : kPopeyeWhite,
+                  kPopeyeColour, kPopeyeCommand, kPopeyeDirective};
+              continue;
+            }
+          }
         }
       }
       if (transitions.count(kPopeyeDirective)) {
@@ -474,20 +475,24 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
         }
       }
       if (transitions.count(kEpdSideToMove)) {
+        bool other = false;
         if (token == "w") {
           model::Colour sideToMove = model::White;
           position.sideToMove = sideToMove;
           transitions = {kEpdCastling};
-          continue;
-        }
-        if (token == "b") {
+        } else if (token == "b") {
           model::Colour sideToMove = model::Black;
           position.sideToMove = sideToMove;
           transitions = {kEpdCastling};
+        } else {
+          other = true;
+        }
+        if (!other) {
           continue;
         }
       }
       if (transitions.count(kEpdCastling)) {
+        bool other = false;
         if (std::regex_match(token, std::regex("\\bK?Q?k?q?"))) {
           for (unsigned char symbol : token) {
             model::Castling castling = symbol == 'Q'   ? model::WhiteLong
@@ -497,33 +502,41 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
             position.castlings.insert(castling);
           }
           transitions = {kEpdEnPassant};
-          continue;
-        }
-        if (token == "-") {
+        } else if (token == "-") {
           transitions = {kEpdEnPassant};
+        } else {
+          other = true;
+        }
+        if (!other) {
           continue;
         }
       }
       if (transitions.count(kEpdEnPassant)) {
+        bool other = false;
         if (std::regex_match(token, std::regex("[a-h][36]"))) {
           int file = token.at(0) - 'a' + 1;
           int rank = token.at(1) - '1' + 1;
           position.enPassant = {(8 - rank) * 8 + file - 1, true};
           transitions = {kEpdOpcode};
-          continue;
-        }
-        if (token == "-") {
+        } else if (token == "-") {
           transitions = {kEpdOpcode};
+        } else {
+          other = true;
+        }
+        if (!other) {
           continue;
         }
       }
       if (transitions.count(kEpdOpcode)) {
+        bool other = false;
         if (token == "acd") {
           transitions = {kEpdAcd};
-          continue;
-        }
-        if (token == "dm") {
+        } else if (token == "dm") {
           transitions = {kEpdDm};
+        } else {
+          other = true;
+        }
+        if (!other) {
           continue;
         }
       }
@@ -535,11 +548,13 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
               transitions.count(kEpdDm) ? model::DM : model::ACD;
           int operand = std::stoi(token);
           position.operation = {opcode, operand};
-          positions.push_back(position);
-          position = {};
-          hasNextLine = true;
-          transitions = {};
-          continue;
+          if (!(tokenInput >> token)) {
+            positions.push_back(position);
+            position = {};
+            hasNextLine = true;
+            transitions = {kEpdForsyth};
+            continue;
+          }
         }
       }
       throw std::invalid_argument("Parse failure (invalid token: \"" + token +
