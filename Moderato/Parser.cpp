@@ -86,6 +86,7 @@ struct Options {
 };
 struct Conditions {
   bool circe;
+  bool noCapture;
 };
 struct Problem {
   Conditions conditions;
@@ -235,15 +236,14 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                   }
                 } else if (transition == "Condition") {
                   std::string condition;
-                  if (translateTerm({{"Circe", "Circe", "Circe"}},
+                  if (translateTerm({{"Circe", "Circe", "Circe"},
+                                     {"NoCapture", "SansPrises", "Ohneschlag"}},
                                     inputLanguage, Piece::ENGLISH, token,
                                     condition)) {
-                    if (condition == "Circe") {
-                      problem.conditions.circe = true;
-                      transitions = {"Condition", "Problem"};
-                    } else {
-                      throw condition;
-                    }
+                    (condition == "Circe"       ? problem.conditions.circe
+                     : condition == "NoCapture" ? problem.conditions.noCapture
+                                                : throw condition) = true;
+                    transitions = {"Condition", "Problem"};
                     return true;
                   }
                 } else if (transition == "Option") {
@@ -585,6 +585,10 @@ void validateProblem(const popeye::Problem& specification) {
   }
 }
 void verifyProblem(const popeye::Problem& specification) {
+  if (specification.conditions.circe && specification.conditions.noCapture) {
+    throw std::domain_error(
+        "Task creation failure (not accepted condition: Circe w/ NoCapture).");
+  }
   std::vector<popeye::Square>::const_iterator jSquare = std::find_if_not(
       specification.options.noCastling.cbegin(),
       specification.options.noCastling.cend(),
@@ -804,6 +808,8 @@ Task convertProblem(const popeye::Problem& specification, int inputLanguage) {
   std::unique_ptr<MoveFactory> moveFactory;
   if (specification.conditions.circe) {
     moveFactory = std::make_unique<CirceMoveFactory>();
+  } else if (specification.conditions.noCapture) {
+    moveFactory = std::make_unique<NoCaptureMoveFactory>();
   } else {
     moveFactory = std::make_unique<MoveFactory>();
   }

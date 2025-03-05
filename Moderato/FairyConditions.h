@@ -47,4 +47,23 @@ class CirceMoveFactory : public MoveFactory {
       std::vector<std::shared_ptr<Move>>& moves) const override;
 };
 
+class NoCaptureMoveFactory : public MoveFactory {
+  void write(std::ostream& output) const override;
+
+ public:
+  void generateCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+      int target, std::vector<std::shared_ptr<Move>>& moves) const override;
+  void generateEnPassant(
+      const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+      int target, int stop,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+  void generatePromotionCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      int origin, int target, bool black, int order,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+};
+
 }  // namespace moderato

@@ -38,7 +38,7 @@ and keywords:
 
 - Directives: `BeginProblem`, `EndProblem`, `NextProblem`
 - Commands: `Remark`, `Condition`, `Option`, `Stipulation`, `Pieces`
-- Conditions: `Circe`
+- Conditions: `Circe`, `NoCapture`
 - Options: `Try`, `Defence`, `SetPlay`, `NullMoves`, `WhiteToPlay`, `Variation`, `MoveNumbers`,
   `NoThreat`, `EnPassant`, `NoBoard`, `NoShortVariations`, `HalfDuplex`, `NoCastling`
 - Stipulation types: direct, help`h`, self`s`
