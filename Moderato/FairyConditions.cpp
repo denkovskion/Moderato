@@ -31,10 +31,13 @@ namespace moderato {
 void CirceMoveFactory::write(std::ostream& output) const {
   output << "CirceMoveFactory[]";
 }
-void CirceMoveFactory::generateCapture(
+bool CirceMoveFactory::generateCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, std::vector<std::shared_ptr<Move>>& moves) const {
   const std::unique_ptr<Piece>& piece = board.at(target);
+  if (piece->isRoyal()) {
+    return false;
+  }
   int rebirth = piece->findRebirthSquare(board, target);
   if (!board.at(rebirth) || rebirth == origin) {
     if (piece->isCastling()) {
@@ -46,13 +49,18 @@ void CirceMoveFactory::generateCapture(
   } else {
     moves.push_back(std::make_shared<Capture>(origin, target));
   }
+  return true;
 }
-void CirceMoveFactory::generateEnPassant(
+bool CirceMoveFactory::generateEnPassant(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
   const std::unique_ptr<Piece>& piece = board.at(stop);
+  if (piece->isRoyal()) {
+    return false;
+  }
   int rebirth = piece->findRebirthSquare(board, stop);
-  if (!board.at(rebirth) || rebirth == origin) {
+  if ((!board.at(rebirth) || rebirth == origin || rebirth == stop) &&
+      !(rebirth == target)) {
     if (piece->isCastling()) {
       moves.push_back(std::make_shared<CirceEnPassantCastling>(origin, target,
                                                                stop, rebirth));
@@ -63,14 +71,18 @@ void CirceMoveFactory::generateEnPassant(
   } else {
     moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
   }
+  return true;
 }
-void CirceMoveFactory::generatePromotionCapture(
+bool CirceMoveFactory::generatePromotionCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     int origin, int target, bool black, int order,
     std::vector<std::shared_ptr<Move>>& moves) const {
   const std::unique_ptr<Piece>& piece = board.at(target);
+  if (piece->isRoyal()) {
+    return false;
+  }
   int rebirth = piece->findRebirthSquare(board, target);
   if (!board.at(rebirth) || rebirth == origin) {
     if (piece->isCastling()) {
@@ -84,22 +96,235 @@ void CirceMoveFactory::generatePromotionCapture(
     moves.push_back(
         std::make_shared<PromotionCapture>(origin, target, black, order));
   }
+  return true;
 }
 
 void NoCaptureMoveFactory::write(std::ostream& output) const {
   output << "NoCaptureMoveFactory[]";
 }
-void NoCaptureMoveFactory::generateCapture(
+bool NoCaptureMoveFactory::generateCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-    int target, std::vector<std::shared_ptr<Move>>& moves) const {}
-void NoCaptureMoveFactory::generateEnPassant(
+    int target, std::vector<std::shared_ptr<Move>>& moves) const {
+  return !board.at(target)->isRoyal();
+}
+bool NoCaptureMoveFactory::generateEnPassant(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-    int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {}
-void NoCaptureMoveFactory::generatePromotionCapture(
+    int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
+  return !board.at(stop)->isRoyal();
+}
+bool NoCaptureMoveFactory::generatePromotionCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     int origin, int target, bool black, int order,
-    std::vector<std::shared_ptr<Move>>& moves) const {}
+    std::vector<std::shared_ptr<Move>>& moves) const {
+  return !board.at(target)->isRoyal();
+}
+
+void AntiCirceMoveFactory::write(std::ostream& output) const {
+  output << "AntiCirceMoveFactory[]";
+}
+bool AntiCirceMoveFactory::generateCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target, std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+    if (piece->isCastling()) {
+      moves.push_back(
+          std::make_shared<AntiCirceCaptureCastling>(origin, target, rebirth));
+    } else {
+      moves.push_back(
+          std::make_shared<AntiCirceCapture>(origin, target, rebirth));
+    }
+  }
+  return true;
+}
+bool AntiCirceMoveFactory::generateCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+  }
+  return true;
+}
+bool AntiCirceMoveFactory::generateEnPassant(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if ((!board.at(rebirth) || rebirth == origin || rebirth == stop) &&
+      !(rebirth == target)) {
+    if (board.at(stop)->isRoyal()) {
+      return false;
+    }
+    if (piece->isCastling()) {
+      moves.push_back(std::make_shared<AntiCirceEnPassantCastling>(
+          origin, target, stop, rebirth));
+    } else {
+      moves.push_back(
+          std::make_shared<AntiCirceEnPassant>(origin, target, stop, rebirth));
+    }
+  }
+  return true;
+}
+bool AntiCirceMoveFactory::generateEnPassant(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target, int stop) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if ((!board.at(rebirth) || rebirth == origin || rebirth == stop) &&
+      !(rebirth == target)) {
+    if (board.at(stop)->isRoyal()) {
+      return false;
+    }
+  }
+  return true;
+}
+bool AntiCirceMoveFactory::generatePromotionCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board,
+    const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+        box,
+    int origin, int target, bool black, int order,
+    std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::unique_ptr<Piece>& piece = box.at(black).at(order).front();
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+    if (piece->isCastling()) {
+      moves.push_back(std::make_shared<AntiCircePromotionCaptureCastling>(
+          origin, target, black, order, rebirth));
+    } else {
+      moves.push_back(std::make_shared<AntiCircePromotionCapture>(
+          origin, target, black, order, rebirth));
+    }
+  }
+  return true;
+}
+bool AntiCirceMoveFactory::generatePromotionCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board,
+    const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+        box,
+    int origin, int target, bool black, int order) const {
+  const std::unique_ptr<Piece>& piece = box.at(black).at(order).front();
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void AntiCirceCaptureRebirthMoveFactory::write(std::ostream& output) const {
+  output << "AntiCirceCaptureRebirthMoveFactory[]";
+}
+bool AntiCirceCaptureRebirthMoveFactory::generateCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target, std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin || rebirth == target) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+    if (piece->isCastling()) {
+      moves.push_back(
+          std::make_shared<AntiCirceCaptureCastling>(origin, target, rebirth));
+    } else {
+      moves.push_back(
+          std::make_shared<AntiCirceCapture>(origin, target, rebirth));
+    }
+  }
+  return true;
+}
+bool AntiCirceCaptureRebirthMoveFactory::generateCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin || rebirth == target) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+  }
+  return true;
+}
+bool AntiCirceCaptureRebirthMoveFactory::generateEnPassant(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin || rebirth == stop) {
+    if (board.at(stop)->isRoyal()) {
+      return false;
+    }
+    if (piece->isCastling()) {
+      moves.push_back(std::make_shared<AntiCirceEnPassantCastling>(
+          origin, target, stop, rebirth));
+    } else {
+      moves.push_back(
+          std::make_shared<AntiCirceEnPassant>(origin, target, stop, rebirth));
+    }
+  }
+  return true;
+}
+bool AntiCirceCaptureRebirthMoveFactory::generateEnPassant(
+    const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+    int target, int stop) const {
+  const std::unique_ptr<Piece>& piece = board.at(origin);
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin || rebirth == stop) {
+    if (board.at(stop)->isRoyal()) {
+      return false;
+    }
+  }
+  return true;
+}
+bool AntiCirceCaptureRebirthMoveFactory::generatePromotionCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board,
+    const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+        box,
+    int origin, int target, bool black, int order,
+    std::vector<std::shared_ptr<Move>>& moves) const {
+  const std::unique_ptr<Piece>& piece = box.at(black).at(order).front();
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin || rebirth == target) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+    if (piece->isCastling()) {
+      moves.push_back(std::make_shared<AntiCircePromotionCaptureCastling>(
+          origin, target, black, order, rebirth));
+    } else {
+      moves.push_back(std::make_shared<AntiCircePromotionCapture>(
+          origin, target, black, order, rebirth));
+    }
+  }
+  return true;
+}
+bool AntiCirceCaptureRebirthMoveFactory::generatePromotionCapture(
+    const std::array<std::unique_ptr<Piece>, 128>& board,
+    const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+        box,
+    int origin, int target, bool black, int order) const {
+  const std::unique_ptr<Piece>& piece = box.at(black).at(order).front();
+  int rebirth = piece->findRebirthSquare(board, target);
+  if (!board.at(rebirth) || rebirth == origin || rebirth == target) {
+    if (board.at(target)->isRoyal()) {
+      return false;
+    }
+  }
+  return true;
+}
 
 }  // namespace moderato

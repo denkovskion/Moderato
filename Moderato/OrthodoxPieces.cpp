@@ -128,9 +128,9 @@ bool King::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Leaper::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Leaper::generateMoves(board, origin, moveFactory);
 }
 
 std::vector<int>& Queen::rides(
@@ -155,9 +155,9 @@ bool Queen::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Rider::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Rider::generateMoves(board, origin, moveFactory);
 }
 
 std::vector<int>& Rook::rides(
@@ -182,9 +182,9 @@ bool Rook::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Rider::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Rider::generateMoves(board, origin, moveFactory);
 }
 
 std::vector<int>& Bishop::rides(
@@ -209,9 +209,9 @@ bool Bishop::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Rider::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Rider::generateMoves(board, origin, moveFactory);
 }
 
 std::vector<int>& Knight::leaps(
@@ -236,9 +236,9 @@ bool Knight::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Leaper::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Leaper::generateMoves(board, origin, moveFactory);
 }
 
 bool Pawn::generateMoves(
@@ -255,30 +255,31 @@ bool Pawn::generateMoves(
       const std::unique_ptr<Piece>& piece = board.at(target);
       if (piece) {
         if (piece->isBlack() != black_) {
-          if (piece->isRoyal()) {
-            return false;
-          }
           if (origin % 16 == (black_ ? 1 : 6)) {
             const std::map<int, std::deque<std::unique_ptr<Piece>>>&
                 promotions = box.at(black_);
             for (const std::pair<const int, std::deque<std::unique_ptr<Piece>>>&
                      promotion : promotions) {
               int order = promotion.first;
-              moveFactory.generatePromotionCapture(board, box, origin, target,
-                                                   black_, order, moves);
+              if (!moveFactory.generatePromotionCapture(
+                      board, box, origin, target, black_, order, moves)) {
+                return false;
+              }
             }
           } else {
-            moveFactory.generateCapture(board, origin, target, moves);
+            if (!moveFactory.generateCapture(board, origin, target, moves)) {
+              return false;
+            }
           }
         }
       } else {
         const std::shared_ptr<int>& enPassant = state.second;
         if (enPassant && target == *enPassant) {
           int stop = target + (black_ ? 1 : -1);
-          if (board.at(stop)->isRoyal()) {
+          if (!moveFactory.generateEnPassant(board, origin, target, stop,
+                                             moves)) {
             return false;
           }
-          moveFactory.generateEnPassant(board, origin, target, stop, moves);
         }
       }
     }
@@ -314,8 +315,8 @@ bool Pawn::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
   int directions[] = {black_ ? -17 : -15, black_ ? 15 : 17};
   for (int direction : directions) {
     int target = origin + direction;
@@ -323,15 +324,28 @@ bool Pawn::generateMoves(
       const std::unique_ptr<Piece>& piece = board.at(target);
       if (piece) {
         if (piece->isBlack() != black_) {
-          if (piece->isRoyal()) {
-            return false;
+          if (origin % 16 == (black_ ? 1 : 6)) {
+            const std::map<int, std::deque<std::unique_ptr<Piece>>>&
+                promotions = box.at(black_);
+            for (const std::pair<const int, std::deque<std::unique_ptr<Piece>>>&
+                     promotion : promotions) {
+              int order = promotion.first;
+              if (!moveFactory.generatePromotionCapture(
+                      board, box, origin, target, black_, order)) {
+                return false;
+              }
+            }
+          } else {
+            if (!moveFactory.generateCapture(board, origin, target)) {
+              return false;
+            }
           }
         }
       } else {
         const std::shared_ptr<int>& enPassant = state.second;
         if (enPassant && target == *enPassant) {
           int stop = target + (black_ ? 1 : -1);
-          if (board.at(stop)->isRoyal()) {
+          if (!moveFactory.generateEnPassant(board, origin, target, stop)) {
             return false;
           }
         }

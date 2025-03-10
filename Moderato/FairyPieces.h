@@ -58,8 +58,8 @@ class Grasshopper : public FairyPiece, Hopper {
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
-      const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-      int origin) const override;
+      const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory) const override;
   static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
@@ -85,8 +85,8 @@ class Nightrider : public FairyPiece, Rider {
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
-      const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-      int origin) const override;
+      const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory) const override;
   static std::string code(int translate);
   std::string getCode(int translate) const override;
 };
@@ -116,8 +116,8 @@ class Amazon : public FairyPiece, Rider, Leaper {
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
-      const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-      int origin) const override;
+      const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory) const override;
   static std::string code(int translate);
   std::string getCode(int translate) const override;
 };

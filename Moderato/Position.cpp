@@ -92,7 +92,8 @@ bool Position::isLegal() {
     if (!(square & 136)) {
       const std::unique_ptr<Piece>& piece = board_.at(square);
       if (piece && piece->isBlack() == blackToMove_) {
-        if (!piece->generateMoves(board_, box_, state_, square)) {
+        if (!piece->generateMoves(board_, box_, state_, square,
+                                  *moveFactory_)) {
           return false;
         }
       }
@@ -109,7 +110,8 @@ int Position::isCheck() {
     if (!(square & 136)) {
       const std::unique_ptr<Piece>& piece = board_.at(square);
       if (piece && piece->isBlack() == blackToMove_) {
-        if (!piece->generateMoves(board_, box_, state_, square)) {
+        if (!piece->generateMoves(board_, box_, state_, square,
+                                  *moveFactory_)) {
           nChecks++;
         }
       }

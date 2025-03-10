@@ -109,4 +109,79 @@ class CircePromotionCaptureCastling : public CircePromotionCapture {
                                 int rebirth);
 };
 
+class AntiCirceCapture : public Capture, protected CirceMove {
+  void write(std::ostream& output) const override;
+  void updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
+                    std::stack<std::unique_ptr<Piece>>& table) const override;
+  void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
+                    std::stack<std::unique_ptr<Piece>>& table) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+  void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
+                std::ostream& lanBuilder, int translate) const override;
+
+ public:
+  AntiCirceCapture(int origin, int target, int rebirth);
+};
+
+class AntiCirceCaptureCastling : public AntiCirceCapture {
+  void write(std::ostream& output) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+
+ public:
+  AntiCirceCaptureCastling(int origin, int target, int rebirth);
+};
+
+class AntiCirceEnPassant : public EnPassant, protected CirceMove {
+  void write(std::ostream& output) const override;
+  void updatePieces(std::array<std::unique_ptr<Piece>, 128>& board,
+                    std::stack<std::unique_ptr<Piece>>& table) const override;
+  void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
+                    std::stack<std::unique_ptr<Piece>>& table) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+  void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
+                std::ostream& lanBuilder, int translate) const override;
+
+ public:
+  AntiCirceEnPassant(int origin, int target, int stop, int rebirth);
+};
+
+class AntiCirceEnPassantCastling : public AntiCirceEnPassant {
+  void write(std::ostream& output) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+
+ public:
+  AntiCirceEnPassantCastling(int origin, int target, int stop, int rebirth);
+};
+
+class AntiCircePromotionCapture : public PromotionCapture, protected CirceMove {
+  void write(std::ostream& output) const override;
+  void updatePieces(
+      std::array<std::unique_ptr<Piece>, 128>& board,
+      std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
+      std::stack<std::unique_ptr<Piece>>& table) const override;
+  void revertPieces(
+      std::array<std::unique_ptr<Piece>, 128>& board,
+      std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
+      std::stack<std::unique_ptr<Piece>>& table) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+  void preWrite(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      std::ostream& lanBuilder, int translate) const override;
+
+ public:
+  AntiCircePromotionCapture(int origin, int target, bool black, int order,
+                            int rebirth);
+};
+
+class AntiCircePromotionCaptureCastling : public AntiCircePromotionCapture {
+  void write(std::ostream& output) const override;
+  void updateCastlings(std::set<int>& castlings) const override;
+
+ public:
+  AntiCircePromotionCaptureCastling(int origin, int target, bool black,
+                                    int order, int rebirth);
+};
+
 }  // namespace moderato

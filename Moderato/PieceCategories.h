@@ -38,7 +38,7 @@ class Leaper {
                      int origin, const MoveFactory& moveFactory,
                      std::vector<std::shared_ptr<Move>>& moves) const;
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                     int origin) const;
+                     int origin, const MoveFactory& moveFactory) const;
 };
 
 class Rider {
@@ -51,7 +51,7 @@ class Rider {
                      int origin, const MoveFactory& moveFactory,
                      std::vector<std::shared_ptr<Move>>& moves) const;
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                     int origin) const;
+                     int origin, const MoveFactory& moveFactory) const;
 };
 
 class Hopper {
@@ -64,7 +64,7 @@ class Hopper {
                      int origin, const MoveFactory& moveFactory,
                      std::vector<std::shared_ptr<Move>>& moves) const;
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                     int origin) const;
+                     int origin, const MoveFactory& moveFactory) const;
 };
 
 }  // namespace moderato

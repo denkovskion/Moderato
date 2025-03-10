@@ -84,9 +84,11 @@ struct Options {
   bool halfDuplex;
   std::vector<Square> noCastling;
 };
+enum AntiCirce { Calvet = 1, Cheylan };
 struct Conditions {
   bool circe;
   bool noCapture;
+  AntiCirce antiCirce;
 };
 struct Problem {
   Conditions conditions;
@@ -237,12 +239,31 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                 } else if (transition == "Condition") {
                   std::string condition;
                   if (translateTerm({{"Circe", "Circe", "Circe"},
-                                     {"NoCapture", "SansPrises", "Ohneschlag"}},
+                                     {"NoCapture", "SansPrises", "Ohneschlag"},
+                                     {"AntiCirce", "AntiCirce", "AntiCirce"}},
                                     inputLanguage, Piece::ENGLISH, token,
                                     condition)) {
-                    (condition == "Circe"       ? problem.conditions.circe
-                     : condition == "NoCapture" ? problem.conditions.noCapture
-                                                : throw condition) = true;
+                    if (condition == "AntiCirce") {
+                      problem.conditions.antiCirce = popeye::Calvet;
+                      transitions = {"AntiCirce", "Condition", "Problem"};
+                    } else {
+                      (condition == "Circe"       ? problem.conditions.circe
+                       : condition == "NoCapture" ? problem.conditions.noCapture
+                                                  : throw condition) = true;
+                      transitions = {"Condition", "Problem"};
+                    }
+                    return true;
+                  }
+                } else if (transition == "AntiCirce") {
+                  std::string antiCirce;
+                  if (translateTerm({{"Calvet", "Calvet", "Calvet"},
+                                     {"Cheylan", "Cheylan", "Cheylan"}},
+                                    inputLanguage, Piece::ENGLISH, token,
+                                    antiCirce)) {
+                    problem.conditions.antiCirce =
+                        (antiCirce == "Calvet"    ? popeye::Calvet
+                         : antiCirce == "Cheylan" ? popeye::Cheylan
+                                                  : throw antiCirce);
                     transitions = {"Condition", "Problem"};
                     return true;
                   }
@@ -585,9 +606,21 @@ void validateProblem(const popeye::Problem& specification) {
   }
 }
 void verifyProblem(const popeye::Problem& specification) {
-  if (specification.conditions.circe && specification.conditions.noCapture) {
+  if (specification.conditions.circe) {
+    if (specification.conditions.noCapture) {
+      throw std::domain_error(
+          "Task creation failure (not accepted condition: Circe w/ "
+          "NoCapture).");
+    } else if (specification.conditions.antiCirce) {
+      throw std::domain_error(
+          "Task creation failure (not accepted condition: Circe w/ "
+          "AntiCirce).");
+    }
+  } else if (specification.conditions.noCapture &&
+             specification.conditions.antiCirce) {
     throw std::domain_error(
-        "Task creation failure (not accepted condition: Circe w/ NoCapture).");
+        "Task creation failure (not accepted condition: NoCapture w/ "
+        "AntiCirce).");
   }
   std::vector<popeye::Square>::const_iterator jSquare = std::find_if_not(
       specification.options.noCastling.cbegin(),
@@ -810,6 +843,14 @@ Task convertProblem(const popeye::Problem& specification, int inputLanguage) {
     moveFactory = std::make_unique<CirceMoveFactory>();
   } else if (specification.conditions.noCapture) {
     moveFactory = std::make_unique<NoCaptureMoveFactory>();
+  } else if (specification.conditions.antiCirce) {
+    if (specification.conditions.antiCirce == popeye::Calvet) {
+      moveFactory = std::make_unique<AntiCirceCaptureRebirthMoveFactory>();
+    } else if (specification.conditions.antiCirce == popeye::Cheylan) {
+      moveFactory = std::make_unique<AntiCirceMoveFactory>();
+    } else {
+      throw specification.conditions.antiCirce;
+    }
   } else {
     moveFactory = std::make_unique<MoveFactory>();
   }

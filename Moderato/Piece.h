@@ -65,8 +65,8 @@ class Piece {
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
-      const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-      int origin) const = 0;
+      const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+      const MoveFactory& moveFactory) const = 0;
   enum { ENGLISH = 1, FRENCH, GERMAN };
   virtual std::string getCode(int translate) const = 0;
   friend std::ostream& operator<<(std::ostream& output, const Piece& piece);

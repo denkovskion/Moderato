@@ -32,14 +32,14 @@ class CirceMoveFactory : public MoveFactory {
   void write(std::ostream& output) const override;
 
  public:
-  void generateCapture(
+  bool generateCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, std::vector<std::shared_ptr<Move>>& moves) const override;
-  void generateEnPassant(
+  bool generateEnPassant(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, int stop,
       std::vector<std::shared_ptr<Move>>& moves) const override;
-  void generatePromotionCapture(
+  bool generatePromotionCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
@@ -51,19 +51,75 @@ class NoCaptureMoveFactory : public MoveFactory {
   void write(std::ostream& output) const override;
 
  public:
-  void generateCapture(
+  bool generateCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, std::vector<std::shared_ptr<Move>>& moves) const override;
-  void generateEnPassant(
+  bool generateEnPassant(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, int stop,
       std::vector<std::shared_ptr<Move>>& moves) const override;
-  void generatePromotionCapture(
+  bool generatePromotionCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       int origin, int target, bool black, int order,
       std::vector<std::shared_ptr<Move>>& moves) const override;
+};
+
+class AntiCirceMoveFactory : public MoveFactory {
+  void write(std::ostream& output) const override;
+
+ public:
+  bool generateCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+      int target, std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generateCapture(const std::array<std::unique_ptr<Piece>, 128>& board,
+                       int origin, int target) const override;
+  bool generateEnPassant(
+      const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+      int target, int stop,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generateEnPassant(const std::array<std::unique_ptr<Piece>, 128>& board,
+                         int origin, int target, int stop) const override;
+  bool generatePromotionCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      int origin, int target, bool black, int order,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generatePromotionCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      int origin, int target, bool black, int order) const override;
+};
+
+class AntiCirceCaptureRebirthMoveFactory : public MoveFactory {
+  void write(std::ostream& output) const override;
+
+ public:
+  bool generateCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+      int target, std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generateCapture(const std::array<std::unique_ptr<Piece>, 128>& board,
+                       int origin, int target) const override;
+  bool generateEnPassant(
+      const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
+      int target, int stop,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generateEnPassant(const std::array<std::unique_ptr<Piece>, 128>& board,
+                         int origin, int target, int stop) const override;
+  bool generatePromotionCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      int origin, int target, bool black, int order,
+      std::vector<std::shared_ptr<Move>>& moves) const override;
+  bool generatePromotionCapture(
+      const std::array<std::unique_ptr<Piece>, 128>& board,
+      const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
+          box,
+      int origin, int target, bool black, int order) const override;
 };
 
 }  // namespace moderato

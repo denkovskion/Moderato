@@ -38,10 +38,9 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::unique_ptr<Piece>& piece = board.at(target);
       if (piece) {
         if (piece->isBlack() != isBlack()) {
-          if (piece->isRoyal()) {
+          if (!moveFactory.generateCapture(board, origin, target, moves)) {
             return false;
           }
-          moveFactory.generateCapture(board, origin, target, moves);
         }
       } else {
         moveFactory.generateQuietMove(board, origin, target, moves);
@@ -51,7 +50,7 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
   return true;
 }
 bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                           int origin) const {
+                           int origin, const MoveFactory& moveFactory) const {
   const std::vector<int>& directions = getLeaps(board);
   for (int direction : directions) {
     int target = origin + direction;
@@ -59,7 +58,7 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::unique_ptr<Piece>& piece = board.at(target);
       if (piece) {
         if (piece->isBlack() != isBlack()) {
-          if (piece->isRoyal()) {
+          if (!moveFactory.generateCapture(board, origin, target)) {
             return false;
           }
         }
@@ -81,10 +80,9 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
         const std::unique_ptr<Piece>& piece = board.at(target);
         if (piece) {
           if (piece->isBlack() != isBlack()) {
-            if (piece->isRoyal()) {
+            if (!moveFactory.generateCapture(board, origin, target, moves)) {
               return false;
             }
-            moveFactory.generateCapture(board, origin, target, moves);
           }
           break;
         } else {
@@ -99,7 +97,7 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
   return true;
 }
 bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                          int origin) const {
+                          int origin, const MoveFactory& moveFactory) const {
   const std::vector<int>& directions = getRides(board);
   for (int direction : directions) {
     int distance = 1;
@@ -109,7 +107,7 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
         const std::unique_ptr<Piece>& piece = board.at(target);
         if (piece) {
           if (piece->isBlack() != isBlack()) {
-            if (piece->isRoyal()) {
+            if (!moveFactory.generateCapture(board, origin, target)) {
               return false;
             }
           }
@@ -140,10 +138,10 @@ bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
             const std::unique_ptr<Piece>& piece = board.at(target);
             if (piece) {
               if (piece->isBlack() != isBlack()) {
-                if (piece->isRoyal()) {
+                if (!moveFactory.generateCapture(board, origin, target,
+                                                 moves)) {
                   return false;
                 }
-                moveFactory.generateCapture(board, origin, target, moves);
               }
             } else {
               moveFactory.generateQuietMove(board, origin, target, moves);
@@ -161,7 +159,7 @@ bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
   return true;
 }
 bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
-                           int origin) const {
+                           int origin, const MoveFactory& moveFactory) const {
   const std::vector<int>& directions = getHops(board);
   for (int direction : directions) {
     int distance = 1;
@@ -174,7 +172,7 @@ bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
             const std::unique_ptr<Piece>& piece = board.at(target);
             if (piece) {
               if (piece->isBlack() != isBlack()) {
-                if (piece->isRoyal()) {
+                if (!moveFactory.generateCapture(board, origin, target)) {
                   return false;
                 }
               }

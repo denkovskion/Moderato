@@ -62,9 +62,9 @@ bool Grasshopper::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Hopper::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Hopper::generateMoves(board, origin, moveFactory);
 }
 
 std::vector<int>& Nightrider::rides(
@@ -89,9 +89,9 @@ bool Nightrider::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Rider::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Rider::generateMoves(board, origin, moveFactory);
 }
 
 std::vector<int>& Amazon::rides(
@@ -126,10 +126,10 @@ bool Amazon::generateMoves(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
-    const std::pair<std::set<int>, std::shared_ptr<int>>& state,
-    int origin) const {
-  return Rider::generateMoves(board, origin) &&
-         Leaper::generateMoves(board, origin);
+    const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
+    const MoveFactory& moveFactory) const {
+  return Rider::generateMoves(board, origin, moveFactory) &&
+         Leaper::generateMoves(board, origin, moveFactory);
 }
 
 std::string Grasshopper::code(int translate) {
