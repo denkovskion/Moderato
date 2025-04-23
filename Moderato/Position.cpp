@@ -73,7 +73,7 @@ Position::getMemory() {
   return memory_;
 }
 
-bool Position::isLegal(std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
+bool Position::isLegal(std::vector<std::unique_ptr<Move>>& pseudoLegalMoves) {
   for (int square = 0; square < 128; square++) {
     if (!(square & 136)) {
       const std::unique_ptr<Piece>& piece = board_.at(square);
@@ -102,9 +102,8 @@ bool Position::isLegal() {
   return true;
 }
 int Position::isCheck() {
-  memory_.push(state_);
-  state_.second.reset();
-  blackToMove_ = !blackToMove_;
+  NullMove nullMove;
+  nullMove.make(*this);
   int nChecks = 0;
   for (int square = 0; square < 128; square++) {
     if (!(square & 136)) {
@@ -117,14 +116,12 @@ int Position::isCheck() {
       }
     }
   }
-  blackToMove_ = !blackToMove_;
-  state_ = std::move(memory_.top());
-  memory_.pop();
+  nullMove.unmake(*this);
   return nChecks;
 }
 bool Position::isTerminal(
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
-  for (const std::shared_ptr<Move>& move : pseudoLegalMoves) {
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves) {
+  for (const std::unique_ptr<Move>& move : pseudoLegalMoves) {
     bool result = move->make(*this);
     move->unmake(*this);
     if (result) {

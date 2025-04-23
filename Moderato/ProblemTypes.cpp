@@ -41,7 +41,7 @@ void BattlePlay::solve(Position& position, bool stalemate, int nMoves,
                        bool includeVariations, bool includeThreats,
                        bool includeShortVariations, int translate,
                        bool logMoves) {
-  std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
+  std::vector<std::unique_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
     std::vector<
@@ -64,7 +64,7 @@ void BattlePlay::solve(Position& position, bool stalemate, int nMoves,
 }
 void BattlePlay::analyseMax(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax,
     std::vector<
         std::pair<std::pair<Play, std::string>,
                   std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -73,8 +73,8 @@ void BattlePlay::analyseMax(
     bool includeShortVariations, bool includeSetPlay, int includeTries,
     bool includeActualPlay, bool markKeys, bool logMoves) {
   if (includeSetPlay && !(depth == getTerminalDepth())) {
-    std::shared_ptr<Move> move = std::make_shared<NullMove>();
-    std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    std::unique_ptr<Move> move = std::make_unique<NullMove>();
+    std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
     if (move->make(position, pseudoLegalMovesMin)) {
       int score = searchMin(position, stalemate, depth, pseudoLegalMovesMin, 0);
       std::vector<
@@ -106,8 +106,8 @@ void BattlePlay::analyseMax(
     move->unmake(position);
   }
   if (includeActualPlay) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMin, lanBuilder, translate)) {
         int score = searchMin(position, stalemate, depth, pseudoLegalMovesMin,
@@ -165,7 +165,7 @@ void BattlePlay::analyseMax(
 }
 void BattlePlay::analyseMin(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
     std::vector<
         std::pair<std::pair<Play, std::string>,
                   std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -173,8 +173,8 @@ void BattlePlay::analyseMin(
     int translate, bool includeVariations, bool includeThreats,
     bool includeShortVariations, bool includeSetPlay) {
   if (depth == getTerminalDepth()) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
         postWrite(position, pseudoLegalMovesMax, lanBuilder);
@@ -188,8 +188,8 @@ void BattlePlay::analyseMin(
                   std::vector<std::deque<std::pair<Play, std::string>>>>>
         threats;
     if (depth > 1 && includeVariations && includeThreats && !includeSetPlay) {
-      std::shared_ptr<Move> move = std::make_shared<NullMove>();
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+      std::unique_ptr<Move> move = std::make_unique<NullMove>();
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
       if (move->make(position, pseudoLegalMovesMax)) {
         int score =
             searchMax(position, stalemate, depth - 1, pseudoLegalMovesMax);
@@ -204,8 +204,8 @@ void BattlePlay::analyseMin(
       }
       move->unmake(position);
     }
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
         int score =
@@ -251,10 +251,10 @@ void Directmate::solve(const AnalysisOptions& analysisOptions,
 }
 int Directmate::searchMax(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) {
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax) {
   int max = INT_MIN;
-  for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-    std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+  for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
+    std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
     if (move->make(position, pseudoLegalMovesMin)) {
       int score = searchMin(position, stalemate, depth, pseudoLegalMovesMin, 0);
       if (score > max) {
@@ -270,11 +270,11 @@ int Directmate::searchMax(
 }
 int Directmate::searchMin(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
     int nRefutations) {
   int min = 0;
   if (depth == 1) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
       if (move->make(position)) {
         min--;
       }
@@ -285,8 +285,8 @@ int Directmate::searchMin(
       }
     }
   } else {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
       if (move->make(position, pseudoLegalMovesMax)) {
         int score =
             searchMax(position, stalemate, depth - 1, pseudoLegalMovesMax);
@@ -344,10 +344,10 @@ void Selfmate::solve(const AnalysisOptions& analysisOptions,
 }
 int Selfmate::searchMax(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) {
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax) {
   int max = 0;
   if (depth == 0) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
       if (move->make(position)) {
         max = INT_MIN;
       }
@@ -357,8 +357,8 @@ int Selfmate::searchMax(
       }
     }
   } else {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
       if (move->make(position, pseudoLegalMovesMin)) {
         int score =
             searchMin(position, stalemate, depth, pseudoLegalMovesMin, 0);
@@ -387,11 +387,11 @@ int Selfmate::searchMax(
 }
 int Selfmate::searchMin(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
     int nRefutations) {
   int min = 0;
-  for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-    std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+  for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
+    std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
     if (move->make(position, pseudoLegalMovesMax)) {
       int score =
           searchMax(position, stalemate, depth - 1, pseudoLegalMovesMax);
@@ -445,7 +445,7 @@ void Helpmate::solve(const AnalysisOptions& analysisOptions,
 void Helpmate::solve(Position& position, bool stalemate, int nMoves,
                      bool halfMove, bool includeSetPlay, bool includeTempoTries,
                      int translate, bool logMoves) {
-  std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
+  std::vector<std::unique_ptr<Move>> pseudoLegalMoves;
   bool includeActualPlay = position.isLegal(pseudoLegalMoves);
   if (includeActualPlay || includeSetPlay) {
     std::vector<
@@ -473,7 +473,7 @@ void Helpmate::solve(Position& position, bool stalemate, int nMoves,
 }
 int Helpmate::analyseMax(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax,
     std::vector<
         std::pair<std::pair<Play, std::string>,
                   std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -482,8 +482,8 @@ int Helpmate::analyseMax(
     bool includeActualPlay, bool logMoves) {
   int max = 0;
   if (includeSetPlay || includeTempoTries) {
-    std::shared_ptr<Move> move = std::make_shared<NullMove>();
-    std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    std::unique_ptr<Move> move = std::make_unique<NullMove>();
+    std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
     if (move->make(position, pseudoLegalMovesMin)) {
       std::vector<
           std::pair<std::pair<Play, std::string>,
@@ -514,8 +514,8 @@ int Helpmate::analyseMax(
     move->unmake(position);
   }
   if (includeActualPlay) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMin, lanBuilder, translate)) {
         std::vector<
@@ -543,7 +543,7 @@ int Helpmate::analyseMax(
 }
 int Helpmate::analyseMin(
     Position& position, bool stalemate, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
     std::vector<
         std::pair<std::pair<Play, std::string>,
                   std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -553,7 +553,7 @@ int Helpmate::analyseMin(
   int min = 0;
   int nLegalMoves = 0;
   if (depth == 0) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
       if (move->make(position)) {
         nLegalMoves++;
       }
@@ -564,8 +564,8 @@ int Helpmate::analyseMin(
     }
   } else {
     if (includeSetPlay || includeTempoTries) {
-      std::shared_ptr<Move> move = std::make_shared<NullMove>();
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+      std::unique_ptr<Move> move = std::make_unique<NullMove>();
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
       if (move->make(position, pseudoLegalMovesMax)) {
         std::vector<
             std::pair<std::pair<Play, std::string>,
@@ -596,8 +596,8 @@ int Helpmate::analyseMin(
       move->unmake(position);
     }
     if (includeActualPlay) {
-      for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-        std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+      for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
+        std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
         std::ostringstream lanBuilder;
         if (move->make(position, pseudoLegalMovesMax, lanBuilder, translate)) {
           nLegalMoves++;
@@ -646,18 +646,24 @@ void MateSearch::solve(const AnalysisOptions& analysisOptions,
   solve(position_, nMoves_, displayOptions.outputLanguage);
 }
 void MateSearch::solve(Position& position, int nMoves, int translate) {
-  std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+  std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
   if (position.isLegal(pseudoLegalMovesMax)) {
     std::vector<std::pair<std::string, std::string>> points;
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
       std::ostringstream lanBuilder;
       if (move->make(position, pseudoLegalMovesMin, lanBuilder, translate)) {
         for (int depth = 1; depth <= nMoves; depth++) {
           int score = searchMin(position, depth, pseudoLegalMovesMin);
           if (score > 0) {
             postWrite(position, pseudoLegalMovesMin, lanBuilder);
-            points.push_back({"+M" + std::to_string(depth), lanBuilder.str()});
+            if (position.isBlackToMove()) {
+              points.push_back(
+                  {"+M" + std::to_string(depth), lanBuilder.str()});
+            } else {
+              points.push_back(
+                  {"-M" + std::to_string(depth), lanBuilder.str()});
+            }
             break;
           }
         }
@@ -671,10 +677,10 @@ void MateSearch::solve(Position& position, int nMoves, int translate) {
 }
 int MateSearch::searchMax(
     Position& position, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) {
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax) {
   int max = -1;
-  for (const std::shared_ptr<Move>& move : pseudoLegalMovesMax) {
-    std::vector<std::shared_ptr<Move>> pseudoLegalMovesMin;
+  for (const std::unique_ptr<Move>& move : pseudoLegalMovesMax) {
+    std::vector<std::unique_ptr<Move>> pseudoLegalMovesMin;
     if (move->make(position, pseudoLegalMovesMin)) {
       max = searchMin(position, depth, pseudoLegalMovesMin);
     }
@@ -687,10 +693,10 @@ int MateSearch::searchMax(
 }
 int MateSearch::searchMin(
     Position& position, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin) {
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin) {
   int min = 0;
   if (depth == 1) {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
       if (move->make(position)) {
         min = -1;
       }
@@ -700,8 +706,8 @@ int MateSearch::searchMin(
       }
     }
   } else {
-    for (const std::shared_ptr<Move>& move : pseudoLegalMovesMin) {
-      std::vector<std::shared_ptr<Move>> pseudoLegalMovesMax;
+    for (const std::unique_ptr<Move>& move : pseudoLegalMovesMin) {
+      std::vector<std::unique_ptr<Move>> pseudoLegalMovesMax;
       if (move->make(position, pseudoLegalMovesMax)) {
         min = searchMax(position, depth - 1, pseudoLegalMovesMax);
       }
@@ -732,7 +738,7 @@ void Perft::solve(const AnalysisOptions& analysisOptions,
   solve(position_, nMoves_, halfMove_);
 }
 void Perft::solve(Position& position, int nMoves, bool halfMove) {
-  std::vector<std::shared_ptr<Move>> pseudoLegalMoves;
+  std::vector<std::unique_ptr<Move>> pseudoLegalMoves;
   if (position.isLegal(pseudoLegalMoves)) {
     long nNodes;
     if (halfMove) {
@@ -747,13 +753,13 @@ void Perft::solve(Position& position, int nMoves, bool halfMove) {
 }
 long Perft::analyse(
     Position& position, int depth,
-    const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) {
+    const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves) {
   if (depth == 0) {
     return 1;
   }
   long nNodes = 0;
-  for (const std::shared_ptr<Move>& move : pseudoLegalMoves) {
-    std::vector<std::shared_ptr<Move>> pseudoLegalMovesNext;
+  for (const std::unique_ptr<Move>& move : pseudoLegalMoves) {
+    std::vector<std::unique_ptr<Move>> pseudoLegalMovesNext;
     if (move->make(position, pseudoLegalMovesNext)) {
       nNodes += analyse(position, depth - 1, pseudoLegalMovesNext);
     }

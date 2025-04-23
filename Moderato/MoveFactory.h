@@ -34,27 +34,27 @@ class MoveFactory {
  public:
   virtual void generateQuietMove(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-      int target, std::vector<std::shared_ptr<Move>>& moves) const;
+      int target, std::vector<std::unique_ptr<Move>>& moves) const;
   virtual bool generateCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-      int target, std::vector<std::shared_ptr<Move>>& moves) const;
+      int target, std::vector<std::unique_ptr<Move>>& moves) const;
   virtual bool generateCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target) const;
   virtual void generateLongCastling(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, int origin2, int target2,
-      std::vector<std::shared_ptr<Move>>& moves) const;
+      std::vector<std::unique_ptr<Move>>& moves) const;
   virtual void generateShortCastling(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, int origin2, int target2,
-      std::vector<std::shared_ptr<Move>>& moves) const;
+      std::vector<std::unique_ptr<Move>>& moves) const;
   virtual void generateDoubleStep(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-      int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const;
+      int target, int stop, std::vector<std::unique_ptr<Move>>& moves) const;
   virtual bool generateEnPassant(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-      int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const;
+      int target, int stop, std::vector<std::unique_ptr<Move>>& moves) const;
   virtual bool generateEnPassant(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, int stop) const;
@@ -63,13 +63,13 @@ class MoveFactory {
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       int origin, int target, bool black, int order,
-      std::vector<std::shared_ptr<Move>>& moves) const;
+      std::vector<std::unique_ptr<Move>>& moves) const;
   virtual bool generatePromotionCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
           box,
       int origin, int target, bool black, int order,
-      std::vector<std::shared_ptr<Move>>& moves) const;
+      std::vector<std::unique_ptr<Move>>& moves) const;
   virtual bool generatePromotionCapture(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&

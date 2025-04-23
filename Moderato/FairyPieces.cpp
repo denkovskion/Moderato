@@ -55,7 +55,7 @@ bool Grasshopper::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Hopper::generateMoves(board, origin, moveFactory, moves);
 }
 bool Grasshopper::generateMoves(
@@ -82,7 +82,7 @@ bool Nightrider::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Nightrider::generateMoves(
@@ -118,7 +118,7 @@ bool Amazon::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Rider::generateMoves(board, origin, moveFactory, moves) &&
          Leaper::generateMoves(board, origin, moveFactory, moves);
 }

@@ -47,11 +47,12 @@ class Move {
 
  public:
   friend std::ostream& operator<<(std::ostream& output, const Move& move);
+  virtual ~Move();
   bool make(Position& position,
-            std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+            std::vector<std::unique_ptr<Move>>& pseudoLegalMoves,
             std::ostream& lanBuilder, int translate) const;
   bool make(Position& position,
-            std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const;
+            std::vector<std::unique_ptr<Move>>& pseudoLegalMoves) const;
   bool make(Position& position) const;
   void unmake(Position& position) const;
 };
@@ -76,7 +77,7 @@ class NullMove : public Move {
 };
 
 void postWrite(Position& position,
-               const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+               const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves,
                std::ostream& lanBuilder);
 
 }  // namespace moderato

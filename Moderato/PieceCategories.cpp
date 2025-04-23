@@ -30,7 +30,7 @@ namespace moderato {
 
 bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                            int origin, const MoveFactory& moveFactory,
-                           std::vector<std::shared_ptr<Move>>& moves) const {
+                           std::vector<std::unique_ptr<Move>>& moves) const {
   const std::vector<int>& directions = getLeaps(board);
   for (int direction : directions) {
     int target = origin + direction;
@@ -70,7 +70,7 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
 
 bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                           int origin, const MoveFactory& moveFactory,
-                          std::vector<std::shared_ptr<Move>>& moves) const {
+                          std::vector<std::unique_ptr<Move>>& moves) const {
   const std::vector<int>& directions = getRides(board);
   for (int direction : directions) {
     int distance = 1;
@@ -125,7 +125,7 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
 
 bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                            int origin, const MoveFactory& moveFactory,
-                           std::vector<std::shared_ptr<Move>>& moves) const {
+                           std::vector<std::unique_ptr<Move>>& moves) const {
   const std::vector<int>& directions = getHops(board);
   for (int direction : directions) {
     int distance = 1;

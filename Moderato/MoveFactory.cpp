@@ -33,16 +33,16 @@ void MoveFactory::write(std::ostream& output) const {
 }
 void MoveFactory::generateQuietMove(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-    int target, std::vector<std::shared_ptr<Move>>& moves) const {
-  moves.push_back(std::make_shared<QuietMove>(origin, target));
+    int target, std::vector<std::unique_ptr<Move>>& moves) const {
+  moves.push_back(std::make_unique<QuietMove>(origin, target));
 }
 bool MoveFactory::generateCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-    int target, std::vector<std::shared_ptr<Move>>& moves) const {
+    int target, std::vector<std::unique_ptr<Move>>& moves) const {
   if (board.at(target)->isRoyal()) {
     return false;
   }
-  moves.push_back(std::make_shared<Capture>(origin, target));
+  moves.push_back(std::make_unique<Capture>(origin, target));
   return true;
 }
 bool MoveFactory::generateCapture(
@@ -53,29 +53,29 @@ bool MoveFactory::generateCapture(
 void MoveFactory::generateLongCastling(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, int origin2, int target2,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   moves.push_back(
-      std::make_shared<LongCastling>(origin, target, origin2, target2));
+      std::make_unique<LongCastling>(origin, target, origin2, target2));
 }
 void MoveFactory::generateShortCastling(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, int origin2, int target2,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   moves.push_back(
-      std::make_shared<ShortCastling>(origin, target, origin2, target2));
+      std::make_unique<ShortCastling>(origin, target, origin2, target2));
 }
 void MoveFactory::generateDoubleStep(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-    int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
-  moves.push_back(std::make_shared<DoubleStep>(origin, target, stop));
+    int target, int stop, std::vector<std::unique_ptr<Move>>& moves) const {
+  moves.push_back(std::make_unique<DoubleStep>(origin, target, stop));
 }
 bool MoveFactory::generateEnPassant(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
-    int target, int stop, std::vector<std::shared_ptr<Move>>& moves) const {
+    int target, int stop, std::vector<std::unique_ptr<Move>>& moves) const {
   if (board.at(stop)->isRoyal()) {
     return false;
   }
-  moves.push_back(std::make_shared<EnPassant>(origin, target, stop));
+  moves.push_back(std::make_unique<EnPassant>(origin, target, stop));
   return true;
 }
 bool MoveFactory::generateEnPassant(
@@ -88,20 +88,20 @@ void MoveFactory::generatePromotion(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     int origin, int target, bool black, int order,
-    std::vector<std::shared_ptr<Move>>& moves) const {
-  moves.push_back(std::make_shared<Promotion>(origin, target, black, order));
+    std::vector<std::unique_ptr<Move>>& moves) const {
+  moves.push_back(std::make_unique<Promotion>(origin, target, black, order));
 }
 bool MoveFactory::generatePromotionCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board,
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     int origin, int target, bool black, int order,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   if (board.at(target)->isRoyal()) {
     return false;
   }
   moves.push_back(
-      std::make_shared<PromotionCapture>(origin, target, black, order));
+      std::make_unique<PromotionCapture>(origin, target, black, order));
   return true;
 }
 bool MoveFactory::generatePromotionCapture(

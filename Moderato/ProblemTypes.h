@@ -44,7 +44,7 @@ class MateProblem : virtual public Problem {
 class BattlePlay {
   void analyseMax(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax,
       std::vector<
           std::pair<std::pair<Play, std::string>,
                     std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -54,7 +54,7 @@ class BattlePlay {
       bool includeActualPlay, bool markKeys, bool logMoves);
   void analyseMin(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
       std::vector<
           std::pair<std::pair<Play, std::string>,
                     std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -63,10 +63,10 @@ class BattlePlay {
       bool includeShortVariations, bool includeSetPlay);
   virtual int searchMax(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) = 0;
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax) = 0;
   virtual int searchMin(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
       int nRefutations) = 0;
   virtual int getTerminalDepth() const = 0;
 
@@ -80,9 +80,9 @@ class BattlePlay {
 class Directmate : public MateProblem, BattlePlay {
   int searchMax(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax) override;
   int searchMin(Position& position, bool stalemate, int depth,
-                const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+                const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
                 int nRefutations) override;
   int getTerminalDepth() const override;
   void write(std::ostream& output) const override;
@@ -96,9 +96,9 @@ class Directmate : public MateProblem, BattlePlay {
 class Selfmate : public MateProblem, BattlePlay {
   int searchMax(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax) override;
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax) override;
   int searchMin(Position& position, bool stalemate, int depth,
-                const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+                const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
                 int nRefutations) override;
   int getTerminalDepth() const override;
   void write(std::ostream& output) const override;
@@ -115,7 +115,7 @@ class Helpmate : public HelpProblem, public MateProblem {
              bool logMoves);
   int analyseMax(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax,
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax,
       std::vector<
           std::pair<std::pair<Play, std::string>,
                     std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -124,7 +124,7 @@ class Helpmate : public HelpProblem, public MateProblem {
       bool includeActualPlay, bool logMoves);
   int analyseMin(
       Position& position, bool stalemate, int depth,
-      const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin,
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin,
       std::vector<
           std::pair<std::pair<Play, std::string>,
                     std::vector<std::deque<std::pair<Play, std::string>>>>>&
@@ -142,9 +142,9 @@ class Helpmate : public HelpProblem, public MateProblem {
 class MateSearch : public Problem {
   void solve(Position& position, int nMoves, int translate);
   int searchMax(Position& position, int depth,
-                const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMax);
+                const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMax);
   int searchMin(Position& position, int depth,
-                const std::vector<std::shared_ptr<Move>>& pseudoLegalMovesMin);
+                const std::vector<std::unique_ptr<Move>>& pseudoLegalMovesMin);
   void write(std::ostream& output) const override;
 
  public:
@@ -156,7 +156,7 @@ class MateSearch : public Problem {
 class Perft : public HelpProblem {
   void solve(Position& position, int nMoves, bool halfMove);
   long analyse(Position& position, int depth,
-               const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves);
+               const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves);
   void write(std::ostream& output) const override;
 
  public:

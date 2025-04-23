@@ -89,7 +89,7 @@ bool King::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   if (!Leaper::generateMoves(board, origin, moveFactory, moves)) {
     return false;
   }
@@ -148,7 +148,7 @@ bool Queen::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Queen::generateMoves(
@@ -175,7 +175,7 @@ bool Rook::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Rook::generateMoves(
@@ -202,7 +202,7 @@ bool Bishop::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Rider::generateMoves(board, origin, moveFactory, moves);
 }
 bool Bishop::generateMoves(
@@ -229,7 +229,7 @@ bool Knight::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   return Leaper::generateMoves(board, origin, moveFactory, moves);
 }
 bool Knight::generateMoves(
@@ -247,7 +247,7 @@ bool Pawn::generateMoves(
         box,
     const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
     const MoveFactory& moveFactory,
-    std::vector<std::shared_ptr<Move>>& moves) const {
+    std::vector<std::unique_ptr<Move>>& moves) const {
   int directions[] = {black_ ? -17 : -15, black_ ? 15 : 17};
   for (int direction : directions) {
     int target = origin + direction;

@@ -36,7 +36,7 @@ class Leaper {
  protected:
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                      int origin, const MoveFactory& moveFactory,
-                     std::vector<std::shared_ptr<Move>>& moves) const;
+                     std::vector<std::unique_ptr<Move>>& moves) const;
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                      int origin, const MoveFactory& moveFactory) const;
 };
@@ -49,7 +49,7 @@ class Rider {
  protected:
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                      int origin, const MoveFactory& moveFactory,
-                     std::vector<std::shared_ptr<Move>>& moves) const;
+                     std::vector<std::unique_ptr<Move>>& moves) const;
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                      int origin, const MoveFactory& moveFactory) const;
 };
@@ -62,7 +62,7 @@ class Hopper {
  protected:
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                      int origin, const MoveFactory& moveFactory,
-                     std::vector<std::shared_ptr<Move>>& moves) const;
+                     std::vector<std::unique_ptr<Move>>& moves) const;
   bool generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
                      int origin, const MoveFactory& moveFactory) const;
 };

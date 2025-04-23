@@ -55,10 +55,10 @@ class Position {
   std::pair<std::set<int>, std::shared_ptr<int>>& getState();
   std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& getMemory();
 
-  bool isLegal(std::vector<std::shared_ptr<Move>>& pseudoLegalMoves);
+  bool isLegal(std::vector<std::unique_ptr<Move>>& pseudoLegalMoves);
   bool isLegal();
   int isCheck();
-  bool isTerminal(const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves);
+  bool isTerminal(const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves);
 
   friend std::ostream& operator<<(std::ostream& output,
                                   const Position& position);

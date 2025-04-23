@@ -32,8 +32,9 @@ std::ostream& operator<<(std::ostream& output, const Move& move) {
   move.write(output);
   return output;
 }
+Move::~Move() {}
 bool Move::make(Position& position,
-                std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+                std::vector<std::unique_ptr<Move>>& pseudoLegalMoves,
                 std::ostream& lanBuilder, int translate) const {
   preWrite(position, lanBuilder, translate);
   bool result = preMake(position);
@@ -42,7 +43,7 @@ bool Move::make(Position& position,
   return result && position.isLegal(pseudoLegalMoves);
 }
 bool Move::make(Position& position,
-                std::vector<std::shared_ptr<Move>>& pseudoLegalMoves) const {
+                std::vector<std::unique_ptr<Move>>& pseudoLegalMoves) const {
   bool result = preMake(position);
   updatePieces(position);
   updateState(position);
@@ -96,7 +97,7 @@ void NullMove::preWrite(Position& position, std::ostream& lanBuilder,
 }
 
 void postWrite(Position& position,
-               const std::vector<std::shared_ptr<Move>>& pseudoLegalMoves,
+               const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves,
                std::ostream& lanBuilder) {
   int nChecks = position.isCheck();
   bool terminal = position.isTerminal(pseudoLegalMoves);

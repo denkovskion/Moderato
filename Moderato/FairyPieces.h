@@ -53,7 +53,7 @@ class Grasshopper : public FairyPiece, Hopper {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
       const MoveFactory& moveFactory,
-      std::vector<std::shared_ptr<Move>>& moves) const override;
+      std::vector<std::unique_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -80,7 +80,7 @@ class Nightrider : public FairyPiece, Rider {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
       const MoveFactory& moveFactory,
-      std::vector<std::shared_ptr<Move>>& moves) const override;
+      std::vector<std::unique_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -111,7 +111,7 @@ class Amazon : public FairyPiece, Rider, Leaper {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
       const MoveFactory& moveFactory,
-      std::vector<std::shared_ptr<Move>>& moves) const override;
+      std::vector<std::unique_ptr<Move>>& moves) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&

@@ -60,7 +60,7 @@ class Piece {
           box,
       const std::pair<std::set<int>, std::shared_ptr<int>>& state, int origin,
       const MoveFactory& moveFactory,
-      std::vector<std::shared_ptr<Move>>& moves) const = 0;
+      std::vector<std::unique_ptr<Move>>& moves) const = 0;
   virtual bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
