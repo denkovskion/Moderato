@@ -232,7 +232,10 @@ void write(
 std::string toOrderedAndFormatted(
     const std::vector<std::pair<std::string, std::string>>& points) {
   std::vector<std::pair<std::string, std::string>> results = points;
-  std::sort(results.begin(), results.end());
+  std::stable_sort(results.begin(), results.end(),
+                   [](const auto& point1, const auto& point2) {
+                     return (point1.first < point2.first);
+                   });
   std::ostringstream stringBuilder;
   auto iPoint = results.cbegin();
   if (iPoint != results.cend()) {
