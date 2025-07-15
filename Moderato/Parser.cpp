@@ -845,9 +845,9 @@ Task convertProblem(const popeye::Problem& specification, int inputLanguage) {
     moveFactory = std::make_unique<NoCaptureMoveFactory>();
   } else if (specification.conditions.antiCirce) {
     if (specification.conditions.antiCirce == popeye::Calvet) {
-      moveFactory = std::make_unique<AntiCirceCaptureRebirthMoveFactory>();
+      moveFactory = std::make_unique<AntiCirceMoveFactory>(true);
     } else if (specification.conditions.antiCirce == popeye::Cheylan) {
-      moveFactory = std::make_unique<AntiCirceMoveFactory>();
+      moveFactory = std::make_unique<AntiCirceMoveFactory>(false);
     } else {
       throw specification.conditions.antiCirce;
     }

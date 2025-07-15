@@ -31,7 +31,8 @@ namespace moderato {
 class CirceMove {
  protected:
   const int rebirth_;
-  CirceMove(int rebirth);
+  const bool castling_;
+  CirceMove(int rebirth, bool castling);
 };
 
 class CirceCapture : public Capture, protected CirceMove {
@@ -45,15 +46,7 @@ class CirceCapture : public Capture, protected CirceMove {
                 std::ostream& lanBuilder, int translate) const override;
 
  public:
-  CirceCapture(int origin, int target, int rebirth);
-};
-
-class CirceCaptureCastling : public CirceCapture {
-  void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-
- public:
-  CirceCaptureCastling(int origin, int target, int rebirth);
+  CirceCapture(int origin, int target, int rebirth, bool castling);
 };
 
 class CirceEnPassant : public EnPassant, protected CirceMove {
@@ -67,15 +60,7 @@ class CirceEnPassant : public EnPassant, protected CirceMove {
                 std::ostream& lanBuilder, int translate) const override;
 
  public:
-  CirceEnPassant(int origin, int target, int stop, int rebirth);
-};
-
-class CirceEnPassantCastling : public CirceEnPassant {
-  void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-
- public:
-  CirceEnPassantCastling(int origin, int target, int stop, int rebirth);
+  CirceEnPassant(int origin, int target, int stop, int rebirth, bool castling);
 };
 
 class CircePromotionCapture : public PromotionCapture, protected CirceMove {
@@ -97,16 +82,7 @@ class CircePromotionCapture : public PromotionCapture, protected CirceMove {
 
  public:
   CircePromotionCapture(int origin, int target, bool black, int order,
-                        int rebirth);
-};
-
-class CircePromotionCaptureCastling : public CircePromotionCapture {
-  void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-
- public:
-  CircePromotionCaptureCastling(int origin, int target, bool black, int order,
-                                int rebirth);
+                        int rebirth, bool castling);
 };
 
 class AntiCirceCapture : public Capture, protected CirceMove {
@@ -120,15 +96,7 @@ class AntiCirceCapture : public Capture, protected CirceMove {
                 std::ostream& lanBuilder, int translate) const override;
 
  public:
-  AntiCirceCapture(int origin, int target, int rebirth);
-};
-
-class AntiCirceCaptureCastling : public AntiCirceCapture {
-  void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-
- public:
-  AntiCirceCaptureCastling(int origin, int target, int rebirth);
+  AntiCirceCapture(int origin, int target, int rebirth, bool castling);
 };
 
 class AntiCirceEnPassant : public EnPassant, protected CirceMove {
@@ -142,15 +110,8 @@ class AntiCirceEnPassant : public EnPassant, protected CirceMove {
                 std::ostream& lanBuilder, int translate) const override;
 
  public:
-  AntiCirceEnPassant(int origin, int target, int stop, int rebirth);
-};
-
-class AntiCirceEnPassantCastling : public AntiCirceEnPassant {
-  void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-
- public:
-  AntiCirceEnPassantCastling(int origin, int target, int stop, int rebirth);
+  AntiCirceEnPassant(int origin, int target, int stop, int rebirth,
+                     bool castling);
 };
 
 class AntiCircePromotionCapture : public PromotionCapture, protected CirceMove {
@@ -172,16 +133,7 @@ class AntiCircePromotionCapture : public PromotionCapture, protected CirceMove {
 
  public:
   AntiCircePromotionCapture(int origin, int target, bool black, int order,
-                            int rebirth);
-};
-
-class AntiCircePromotionCaptureCastling : public AntiCircePromotionCapture {
-  void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-
- public:
-  AntiCircePromotionCaptureCastling(int origin, int target, bool black,
-                                    int order, int rebirth);
+                            int rebirth, bool castling);
 };
 
 }  // namespace moderato

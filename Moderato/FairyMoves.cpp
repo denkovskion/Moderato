@@ -26,13 +26,14 @@
 
 namespace moderato {
 
-CirceMove::CirceMove(int rebirth) : rebirth_(rebirth) {}
+CirceMove::CirceMove(int rebirth, bool castling)
+    : rebirth_(rebirth), castling_(castling) {}
 
-CirceCapture::CirceCapture(int origin, int target, int rebirth)
-    : Capture(origin, target), CirceMove(rebirth) {}
+CirceCapture::CirceCapture(int origin, int target, int rebirth, bool castling)
+    : Capture(origin, target), CirceMove(rebirth, castling) {}
 void CirceCapture::write(std::ostream& output) const {
   output << "CirceCapture[origin=" << origin_ << ", target=" << target_
-         << ", rebirth=" << rebirth_ << "]";
+         << ", rebirth=" << rebirth_ << ", castling=" << castling_ << "]";
 }
 void CirceCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
@@ -53,7 +54,11 @@ void CirceCapture::revertPieces(
 void CirceCapture::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
-  castlings.erase(rebirth_);
+  if (castling_) {
+    castlings.insert(rebirth_);
+  } else {
+    castlings.erase(rebirth_);
+  }
 }
 void CirceCapture::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -64,23 +69,13 @@ void CirceCapture::preWrite(
              << ")";
 }
 
-CirceCaptureCastling::CirceCaptureCastling(int origin, int target, int rebirth)
-    : CirceCapture(origin, target, rebirth) {}
-void CirceCaptureCastling::write(std::ostream& output) const {
-  output << "CirceCaptureCastling[origin=" << origin_ << ", target=" << target_
-         << ", rebirth=" << rebirth_ << "]";
-}
-void CirceCaptureCastling::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.insert(rebirth_);
-}
-
-CirceEnPassant::CirceEnPassant(int origin, int target, int stop, int rebirth)
-    : EnPassant(origin, target, stop), CirceMove(rebirth) {}
+CirceEnPassant::CirceEnPassant(int origin, int target, int stop, int rebirth,
+                               bool castling)
+    : EnPassant(origin, target, stop), CirceMove(rebirth, castling) {}
 void CirceEnPassant::write(std::ostream& output) const {
   output << "CirceEnPassant[origin=" << origin_ << ", target=" << target_
-         << ", stop=" << stop_ << ", rebirth=" << rebirth_ << "]";
+         << ", stop=" << stop_ << ", rebirth=" << rebirth_
+         << ", castling=" << castling_ << "]";
 }
 void CirceEnPassant::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
@@ -102,7 +97,11 @@ void CirceEnPassant::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
   castlings.erase(stop_);
-  castlings.erase(rebirth_);
+  if (castling_) {
+    castlings.insert(rebirth_);
+  } else {
+    castlings.erase(rebirth_);
+  }
 }
 void CirceEnPassant::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -113,28 +112,15 @@ void CirceEnPassant::preWrite(
              << ")";
 }
 
-CirceEnPassantCastling::CirceEnPassantCastling(int origin, int target, int stop,
-                                               int rebirth)
-    : CirceEnPassant(origin, target, stop, rebirth) {}
-void CirceEnPassantCastling::write(std::ostream& output) const {
-  output << "CirceEnPassantCastling[origin=" << origin_
-         << ", target=" << target_ << ", stop=" << stop_
-         << ", rebirth=" << rebirth_ << "]";
-}
-void CirceEnPassantCastling::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
-  castlings.insert(rebirth_);
-}
-
 CircePromotionCapture::CircePromotionCapture(int origin, int target, bool black,
-                                             int order, int rebirth)
-    : PromotionCapture(origin, target, black, order), CirceMove(rebirth) {}
+                                             int order, int rebirth,
+                                             bool castling)
+    : PromotionCapture(origin, target, black, order),
+      CirceMove(rebirth, castling) {}
 void CircePromotionCapture::write(std::ostream& output) const {
   output << "CircePromotionCapture[origin=" << origin_ << ", target=" << target_
          << ", black=" << black_ << ", order=" << order_
-         << ", rebirth=" << rebirth_ << "]";
+         << ", rebirth=" << rebirth_ << ", castling=" << castling_ << "]";
 }
 void CircePromotionCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
@@ -161,7 +147,11 @@ void CircePromotionCapture::revertPieces(
 void CircePromotionCapture::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
-  castlings.erase(rebirth_);
+  if (castling_) {
+    castlings.insert(rebirth_);
+  } else {
+    castlings.erase(rebirth_);
+  }
 }
 void CircePromotionCapture::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -175,26 +165,12 @@ void CircePromotionCapture::preWrite(
              << ")";
 }
 
-CircePromotionCaptureCastling::CircePromotionCaptureCastling(
-    int origin, int target, bool black, int order, int rebirth)
-    : CircePromotionCapture(origin, target, black, order, rebirth) {}
-void CircePromotionCaptureCastling::write(std::ostream& output) const {
-  output << "CircePromotionCaptureCastling[origin=" << origin_
-         << ", target=" << target_ << ", black=" << black_
-         << ", order=" << order_ << ", rebirth=" << rebirth_ << "]";
-}
-void CircePromotionCaptureCastling::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.insert(rebirth_);
-}
-
-AntiCirceCapture::AntiCirceCapture(int origin, int target, int rebirth)
-    : Capture(origin, target), CirceMove(rebirth) {}
+AntiCirceCapture::AntiCirceCapture(int origin, int target, int rebirth,
+                                   bool castling)
+    : Capture(origin, target), CirceMove(rebirth, castling) {}
 void AntiCirceCapture::write(std::ostream& output) const {
   output << "AntiCirceCapture[origin=" << origin_ << ", target=" << target_
-         << ", rebirth=" << rebirth_ << "]";
+         << ", rebirth=" << rebirth_ << ", castling=" << castling_ << "]";
 }
 void AntiCirceCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
@@ -212,7 +188,11 @@ void AntiCirceCapture::revertPieces(
 void AntiCirceCapture::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
-  castlings.erase(rebirth_);
+  if (castling_) {
+    castlings.insert(rebirth_);
+  } else {
+    castlings.erase(rebirth_);
+  }
 }
 void AntiCirceCapture::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -223,25 +203,13 @@ void AntiCirceCapture::preWrite(
              << ")";
 }
 
-AntiCirceCaptureCastling::AntiCirceCaptureCastling(int origin, int target,
-                                                   int rebirth)
-    : AntiCirceCapture(origin, target, rebirth) {}
-void AntiCirceCaptureCastling::write(std::ostream& output) const {
-  output << "AntiCirceCaptureCastling[origin=" << origin_
-         << ", target=" << target_ << ", rebirth=" << rebirth_ << "]";
-}
-void AntiCirceCaptureCastling::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.insert(rebirth_);
-}
-
 AntiCirceEnPassant::AntiCirceEnPassant(int origin, int target, int stop,
-                                       int rebirth)
-    : EnPassant(origin, target, stop), CirceMove(rebirth) {}
+                                       int rebirth, bool castling)
+    : EnPassant(origin, target, stop), CirceMove(rebirth, castling) {}
 void AntiCirceEnPassant::write(std::ostream& output) const {
   output << "AntiCirceEnPassant[origin=" << origin_ << ", target=" << target_
-         << ", stop=" << stop_ << ", rebirth=" << rebirth_ << "]";
+         << ", stop=" << stop_ << ", rebirth=" << rebirth_
+         << ", castling=" << castling_ << "]";
 }
 void AntiCirceEnPassant::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
@@ -260,7 +228,11 @@ void AntiCirceEnPassant::updateCastlings(std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
   castlings.erase(stop_);
-  castlings.erase(rebirth_);
+  if (castling_) {
+    castlings.insert(rebirth_);
+  } else {
+    castlings.erase(rebirth_);
+  }
 }
 void AntiCirceEnPassant::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -271,30 +243,16 @@ void AntiCirceEnPassant::preWrite(
              << ")";
 }
 
-AntiCirceEnPassantCastling::AntiCirceEnPassantCastling(int origin, int target,
-                                                       int stop, int rebirth)
-    : AntiCirceEnPassant(origin, target, stop, rebirth) {}
-void AntiCirceEnPassantCastling::write(std::ostream& output) const {
-  output << "AntiCirceEnPassantCastling[origin=" << origin_
-         << ", target=" << target_ << ", stop=" << stop_
-         << ", rebirth=" << rebirth_ << "]";
-}
-void AntiCirceEnPassantCastling::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
-  castlings.insert(rebirth_);
-}
-
 AntiCircePromotionCapture::AntiCircePromotionCapture(int origin, int target,
                                                      bool black, int order,
-                                                     int rebirth)
-    : PromotionCapture(origin, target, black, order), CirceMove(rebirth) {}
+                                                     int rebirth, bool castling)
+    : PromotionCapture(origin, target, black, order),
+      CirceMove(rebirth, castling) {}
 void AntiCircePromotionCapture::write(std::ostream& output) const {
   output << "AntiCircePromotionCapture[origin=" << origin_
          << ", target=" << target_ << ", black=" << black_
-         << ", order=" << order_ << ", rebirth=" << rebirth_ << "]";
+         << ", order=" << order_ << ", rebirth=" << rebirth_
+         << ", castling=" << castling_ << "]";
 }
 void AntiCircePromotionCapture::updatePieces(
     std::array<std::unique_ptr<Piece>, 128>& board,
@@ -319,7 +277,11 @@ void AntiCircePromotionCapture::updateCastlings(
     std::set<int>& castlings) const {
   castlings.erase(origin_);
   castlings.erase(target_);
-  castlings.erase(rebirth_);
+  if (castling_) {
+    castlings.insert(rebirth_);
+  } else {
+    castlings.erase(rebirth_);
+  }
 }
 void AntiCircePromotionCapture::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -331,21 +293,6 @@ void AntiCircePromotionCapture::preWrite(
              << box.at(black_).at(order_).front()->getCode(translate) << "("
              << box.at(black_).at(order_).front()->getCode(translate)
              << toCode(board, rebirth_) << ")";
-}
-
-AntiCircePromotionCaptureCastling::AntiCircePromotionCaptureCastling(
-    int origin, int target, bool black, int order, int rebirth)
-    : AntiCircePromotionCapture(origin, target, black, order, rebirth) {}
-void AntiCircePromotionCaptureCastling::write(std::ostream& output) const {
-  output << "AntiCircePromotionCaptureCastling[origin=" << origin_
-         << ", target=" << target_ << ", black=" << black_
-         << ", order=" << order_ << ", rebirth=" << rebirth_ << "]";
-}
-void AntiCircePromotionCaptureCastling::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.insert(rebirth_);
 }
 
 }  // namespace moderato
