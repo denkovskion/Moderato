@@ -32,6 +32,7 @@ class MoveFactory {
   virtual void write(std::ostream& output) const;
 
  public:
+  virtual ~MoveFactory();
   virtual void generateQuietMove(
       const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
       int target, std::vector<std::unique_ptr<Move>>& moves) const;

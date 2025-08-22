@@ -28,6 +28,7 @@
 
 namespace moderato {
 
+MoveFactory::~MoveFactory() {}
 void MoveFactory::write(std::ostream& output) const {
   output << "MoveFactory[]";
 }

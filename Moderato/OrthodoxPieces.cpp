@@ -47,31 +47,37 @@ bool King::isCastling() const { return true; }
 bool Rook::isCastling() const { return true; }
 
 int King::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return black_ ? 71 : 64;
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return black_ != opposite ? 71 : 64;
 }
 int Queen::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return black_ ? 55 : 48;
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return black_ != opposite ? 55 : 48;
 }
 int Rook::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return (square / 16 + square % 16) % 2 ? (black_ ? 7 : 112)
-                                         : (black_ ? 119 : 0);
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return (square / 16 + square % 16) % 2 ? (black_ != opposite ? 7 : 112)
+                                         : (black_ != opposite ? 119 : 0);
 }
 int Bishop::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return (square / 16 + square % 16) % 2 ? (black_ ? 39 : 80)
-                                         : (black_ ? 87 : 32);
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return (square / 16 + square % 16) % 2 ? (black_ != opposite ? 39 : 80)
+                                         : (black_ != opposite ? 87 : 32);
 }
 int Knight::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return (square / 16 + square % 16) % 2 ? (black_ ? 103 : 16)
-                                         : (black_ ? 23 : 96);
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return (square / 16 + square % 16) % 2 ? (black_ != opposite ? 103 : 16)
+                                         : (black_ != opposite ? 23 : 96);
 }
 int Pawn::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return (square / 16) * 16 + (black_ ? 6 : 1);
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return (square / 16) * 16 + (black_ != opposite ? 6 : 1);
 }
 
 std::vector<int>& King::leaps(

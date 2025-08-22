@@ -89,6 +89,8 @@ struct Conditions {
   bool circe;
   bool noCapture;
   AntiCirce antiCirce;
+  bool andernachChess;
+  bool antiAndernachChess;
 };
 struct Problem {
   Conditions conditions;
@@ -238,18 +240,26 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                   }
                 } else if (transition == "Condition") {
                   std::string condition;
-                  if (translateTerm({{"Circe", "Circe", "Circe"},
-                                     {"NoCapture", "SansPrises", "Ohneschlag"},
-                                     {"AntiCirce", "AntiCirce", "AntiCirce"}},
-                                    inputLanguage, Piece::ENGLISH, token,
-                                    condition)) {
+                  if (translateTerm(
+                          {{"Circe", "Circe", "Circe"},
+                           {"NoCapture", "SansPrises", "Ohneschlag"},
+                           {"AntiCirce", "AntiCirce", "AntiCirce"},
+                           {"AndernachChess", "EchecsAndernach",
+                            "AndernachSchach"},
+                           {"AntiAndernachChess", "EchecsAntiAndernach",
+                            "AntiAndernachSchach"}},
+                          inputLanguage, Piece::ENGLISH, token, condition)) {
                     if (condition == "AntiCirce") {
                       problem.conditions.antiCirce = popeye::Calvet;
                       transitions = {"AntiCirce", "Condition", "Problem"};
                     } else {
                       (condition == "Circe"       ? problem.conditions.circe
                        : condition == "NoCapture" ? problem.conditions.noCapture
-                                                  : throw condition) = true;
+                       : condition == "AndernachChess"
+                           ? problem.conditions.andernachChess
+                       : condition == "AntiAndernachChess"
+                           ? problem.conditions.antiAndernachChess
+                           : throw condition) = true;
                       transitions = {"Condition", "Problem"};
                     }
                     return true;
@@ -606,21 +616,29 @@ void validateProblem(const popeye::Problem& specification) {
   }
 }
 void verifyProblem(const popeye::Problem& specification) {
-  if (specification.conditions.circe) {
-    if (specification.conditions.noCapture) {
-      throw std::domain_error(
-          "Task creation failure (not accepted condition: Circe w/ "
-          "NoCapture).");
-    } else if (specification.conditions.antiCirce) {
-      throw std::domain_error(
-          "Task creation failure (not accepted condition: Circe w/ "
-          "AntiCirce).");
-    }
+  if (specification.conditions.noCapture && specification.conditions.circe) {
+    throw std::domain_error(
+        "Task creation failure (not accepted condition: NoCapture w/ Circe).");
   } else if (specification.conditions.noCapture &&
              specification.conditions.antiCirce) {
     throw std::domain_error(
         "Task creation failure (not accepted condition: NoCapture w/ "
         "AntiCirce).");
+  } else if (specification.conditions.noCapture &&
+             specification.conditions.andernachChess) {
+    throw std::domain_error(
+        "Task creation failure (not accepted condition: NoCapture w/ "
+        "AndernachChess).");
+  } else if (specification.conditions.circe &&
+             specification.conditions.antiCirce) {
+    throw std::domain_error(
+        "Task creation failure (not accepted condition: Circe w/ "
+        "AntiCirce).");
+  } else if (specification.conditions.andernachChess &&
+             specification.conditions.antiAndernachChess) {
+    throw std::domain_error(
+        "Task creation failure (not accepted condition: AndernachChess w/ "
+        "AntiAndernachChess).");
   }
   std::vector<popeye::Square>::const_iterator jSquare = std::find_if_not(
       specification.options.noCastling.cbegin(),
@@ -761,9 +779,13 @@ Task convertProblem(const popeye::Problem& specification, int inputLanguage) {
         specification.pieces.cend();
     while (true) {
       iPiece =
-          std::find_if(iPiece, nPiece, [&colour](const popeye::Piece& piece) {
-            return piece.colour == colour && piece.pieceType == popeye::Pawn;
-          });
+          std::find_if(iPiece, nPiece,
+                       [&colour, &specification](const popeye::Piece& piece) {
+                         return piece.pieceType == popeye::Pawn &&
+                                (piece.colour == colour ||
+                                 specification.conditions.andernachChess ||
+                                 specification.conditions.antiAndernachChess);
+                       });
       if (iPiece == nPiece) {
         break;
       }
@@ -839,18 +861,45 @@ Task convertProblem(const popeye::Problem& specification, int inputLanguage) {
   }
   std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory;
   std::unique_ptr<MoveFactory> moveFactory;
-  if (specification.conditions.circe) {
-    moveFactory = std::make_unique<CirceMoveFactory>();
-  } else if (specification.conditions.noCapture) {
-    moveFactory = std::make_unique<NoCaptureMoveFactory>();
+  if (specification.conditions.noCapture) {
+    if (specification.conditions.antiAndernachChess) {
+      moveFactory = std::make_unique<NoCaptureAntiAndernachMoveFactory>();
+    } else {
+      moveFactory = std::make_unique<NoCaptureMoveFactory>();
+    }
+  } else if (specification.conditions.circe) {
+    if (specification.conditions.andernachChess) {
+      moveFactory = std::make_unique<CirceAndernachMoveFactory>();
+    } else if (specification.conditions.antiAndernachChess) {
+      moveFactory = std::make_unique<CirceAntiAndernachMoveFactory>();
+    } else {
+      moveFactory = std::make_unique<CirceMoveFactory>();
+    }
   } else if (specification.conditions.antiCirce) {
     if (specification.conditions.antiCirce == popeye::Calvet) {
-      moveFactory = std::make_unique<AntiCirceMoveFactory>(true);
+      if (specification.conditions.andernachChess) {
+        moveFactory = std::make_unique<AntiCirceAndernachMoveFactory>(true);
+      } else if (specification.conditions.antiAndernachChess) {
+        moveFactory = std::make_unique<AntiCirceAntiAndernachMoveFactory>(true);
+      } else {
+        moveFactory = std::make_unique<AntiCirceMoveFactory>(true);
+      }
     } else if (specification.conditions.antiCirce == popeye::Cheylan) {
-      moveFactory = std::make_unique<AntiCirceMoveFactory>(false);
+      if (specification.conditions.andernachChess) {
+        moveFactory = std::make_unique<AntiCirceAndernachMoveFactory>(false);
+      } else if (specification.conditions.antiAndernachChess) {
+        moveFactory =
+            std::make_unique<AntiCirceAntiAndernachMoveFactory>(false);
+      } else {
+        moveFactory = std::make_unique<AntiCirceMoveFactory>(false);
+      }
     } else {
       throw specification.conditions.antiCirce;
     }
+  } else if (specification.conditions.andernachChess) {
+    moveFactory = std::make_unique<AndernachMoveFactory>();
+  } else if (specification.conditions.antiAndernachChess) {
+    moveFactory = std::make_unique<AntiAndernachMoveFactory>();
   } else {
     moveFactory = std::make_unique<MoveFactory>();
   }

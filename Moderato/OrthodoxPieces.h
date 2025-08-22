@@ -41,7 +41,7 @@ class King : public Piece, Leaper {
   bool isRoyal() const override;
   bool isCastling() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -70,7 +70,7 @@ class Queen : public Piece, Rider {
   Queen(bool black);
   bool isBlack() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -100,7 +100,7 @@ class Rook : public Piece, Rider {
   bool isBlack() const override;
   bool isCastling() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -129,7 +129,7 @@ class Bishop : public Piece, Rider {
   Bishop(bool black);
   bool isBlack() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -158,7 +158,7 @@ class Knight : public Piece, Leaper {
   Knight(bool black);
   bool isBlack() const override;
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -182,7 +182,7 @@ class Pawn : public Piece {
  public:
   Pawn(bool black);
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
   bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&

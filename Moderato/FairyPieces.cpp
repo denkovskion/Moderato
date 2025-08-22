@@ -28,8 +28,9 @@ namespace moderato {
 
 FairyPiece::FairyPiece(bool black) : Piece(black) {}
 int FairyPiece::findRebirthSquare(
-    const std::array<std::unique_ptr<Piece>, 128>& board, int square) const {
-  return (square / 16) * 16 + (black_ ? 0 : 7);
+    const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+    bool opposite) const {
+  return (square / 16) * 16 + (black_ != opposite ? 0 : 7);
 }
 
 Grasshopper::Grasshopper(bool black) : FairyPiece(black) {}

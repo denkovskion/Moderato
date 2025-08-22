@@ -34,7 +34,7 @@ class FairyPiece : public Piece {
 
  public:
   int findRebirthSquare(const std::array<std::unique_ptr<Piece>, 128>& board,
-                        int square) const override;
+                        int square, bool opposite) const override;
 };
 
 class Grasshopper : public FairyPiece, Hopper {

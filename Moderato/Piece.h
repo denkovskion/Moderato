@@ -43,17 +43,18 @@ class Piece {
   virtual std::string getName() const = 0;
 
  protected:
-  const bool black_;
+  bool black_;
   Piece(bool black);
 
  public:
   virtual ~Piece();
+  bool& isBlack();
   bool isBlack() const;
   virtual bool isRoyal() const;
   virtual bool isCastling() const;
   virtual int findRebirthSquare(
-      const std::array<std::unique_ptr<Piece>, 128>& board,
-      int square) const = 0;
+      const std::array<std::unique_ptr<Piece>, 128>& board, int square,
+      bool opposite) const = 0;
   virtual bool generateMoves(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -71,5 +72,7 @@ class Piece {
   virtual std::string getCode(int translate) const = 0;
   friend std::ostream& operator<<(std::ostream& output, const Piece& piece);
 };
+
+std::string toCode(bool black, int translate);
 
 }  // namespace moderato

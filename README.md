@@ -38,7 +38,7 @@ and keywords:
 
 - Directives: `BeginProblem`, `EndProblem`, `NextProblem`
 - Commands: `Remark`, `Condition`, `Option`, `Stipulation`, `Pieces`
-- Conditions: `Circe`, `NoCapture`, `AntiCirce`
+- Conditions: `Circe`, `NoCapture`, `AntiCirce`, `AndernachChess`, `AntiAndernachChess`
 - Anti-Circe types: `Calvet`(default), `Cheylan`
 - Options: `Try`, `Defence`, `SetPlay`, `NullMoves`, `WhiteToPlay`, `Variation`, `MoveNumbers`,
   `NoThreat`, `EnPassant`, `NoBoard`, `NoShortVariations`, `HalfDuplex`, `NoCastling`
