@@ -40,7 +40,8 @@ void MoveFactory::generateQuietMove(
 bool MoveFactory::generateCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, std::vector<std::unique_ptr<Move>>& moves) const {
-  if (board.at(target)->isRoyal()) {
+  const std::unique_ptr<Piece>& other = board.at(target);
+  if (other->isRoyal()) {
     return false;
   }
   moves.push_back(std::make_unique<Capture>(origin, target));
@@ -49,7 +50,11 @@ bool MoveFactory::generateCapture(
 bool MoveFactory::generateCapture(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target) const {
-  return !board.at(target)->isRoyal();
+  const std::unique_ptr<Piece>& other = board.at(target);
+  if (other->isRoyal()) {
+    return false;
+  }
+  return true;
 }
 void MoveFactory::generateLongCastling(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
@@ -73,7 +78,8 @@ void MoveFactory::generateDoubleStep(
 bool MoveFactory::generateEnPassant(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, int stop, std::vector<std::unique_ptr<Move>>& moves) const {
-  if (board.at(stop)->isRoyal()) {
+  const std::unique_ptr<Piece>& other = board.at(stop);
+  if (other->isRoyal()) {
     return false;
   }
   moves.push_back(std::make_unique<EnPassant>(origin, target, stop));
@@ -82,7 +88,11 @@ bool MoveFactory::generateEnPassant(
 bool MoveFactory::generateEnPassant(
     const std::array<std::unique_ptr<Piece>, 128>& board, int origin,
     int target, int stop) const {
-  return !board.at(stop)->isRoyal();
+  const std::unique_ptr<Piece>& other = board.at(stop);
+  if (other->isRoyal()) {
+    return false;
+  }
+  return true;
 }
 void MoveFactory::generatePromotion(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -98,7 +108,8 @@ bool MoveFactory::generatePromotionCapture(
         box,
     int origin, int target, bool black, int order,
     std::vector<std::unique_ptr<Move>>& moves) const {
-  if (board.at(target)->isRoyal()) {
+  const std::unique_ptr<Piece>& other = board.at(target);
+  if (other->isRoyal()) {
     return false;
   }
   moves.push_back(
@@ -110,7 +121,11 @@ bool MoveFactory::generatePromotionCapture(
     const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
         box,
     int origin, int target, bool black, int order) const {
-  return !board.at(target)->isRoyal();
+  const std::unique_ptr<Piece>& other = board.at(target);
+  if (other->isRoyal()) {
+    return false;
+  }
+  return true;
 }
 std::ostream& operator<<(std::ostream& output, const MoveFactory& moveFactory) {
   moveFactory.write(output);

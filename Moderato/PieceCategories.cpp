@@ -35,9 +35,9 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
   for (int direction : directions) {
     int target = origin + direction;
     if (!(target & 136)) {
-      const std::unique_ptr<Piece>& piece = board.at(target);
-      if (piece) {
-        if (piece->isBlack() != isBlack()) {
+      const std::unique_ptr<Piece>& other = board.at(target);
+      if (other) {
+        if (other->isBlack() != isBlack()) {
           if (!moveFactory.generateCapture(board, origin, target, moves)) {
             return false;
           }
@@ -55,9 +55,9 @@ bool Leaper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
   for (int direction : directions) {
     int target = origin + direction;
     if (!(target & 136)) {
-      const std::unique_ptr<Piece>& piece = board.at(target);
-      if (piece) {
-        if (piece->isBlack() != isBlack()) {
+      const std::unique_ptr<Piece>& other = board.at(target);
+      if (other) {
+        if (other->isBlack() != isBlack()) {
           if (!moveFactory.generateCapture(board, origin, target)) {
             return false;
           }
@@ -77,9 +77,9 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
     while (true) {
       int target = origin + distance * direction;
       if (!(target & 136)) {
-        const std::unique_ptr<Piece>& piece = board.at(target);
-        if (piece) {
-          if (piece->isBlack() != isBlack()) {
+        const std::unique_ptr<Piece>& other = board.at(target);
+        if (other) {
+          if (other->isBlack() != isBlack()) {
             if (!moveFactory.generateCapture(board, origin, target, moves)) {
               return false;
             }
@@ -104,9 +104,9 @@ bool Rider::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
     while (true) {
       int target = origin + distance * direction;
       if (!(target & 136)) {
-        const std::unique_ptr<Piece>& piece = board.at(target);
-        if (piece) {
-          if (piece->isBlack() != isBlack()) {
+        const std::unique_ptr<Piece>& other = board.at(target);
+        if (other) {
+          if (other->isBlack() != isBlack()) {
             if (!moveFactory.generateCapture(board, origin, target)) {
               return false;
             }
@@ -135,9 +135,9 @@ bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
         if (board.at(target)) {
           target = origin + (distance + 1) * direction;
           if (!(target & 136)) {
-            const std::unique_ptr<Piece>& piece = board.at(target);
-            if (piece) {
-              if (piece->isBlack() != isBlack()) {
+            const std::unique_ptr<Piece>& other = board.at(target);
+            if (other) {
+              if (other->isBlack() != isBlack()) {
                 if (!moveFactory.generateCapture(board, origin, target,
                                                  moves)) {
                   return false;
@@ -169,9 +169,9 @@ bool Hopper::generateMoves(const std::array<std::unique_ptr<Piece>, 128>& board,
         if (board.at(target)) {
           target = origin + (distance + 1) * direction;
           if (!(target & 136)) {
-            const std::unique_ptr<Piece>& piece = board.at(target);
-            if (piece) {
-              if (piece->isBlack() != isBlack()) {
+            const std::unique_ptr<Piece>& other = board.at(target);
+            if (other) {
+              if (other->isBlack() != isBlack()) {
                 if (!moveFactory.generateCapture(board, origin, target)) {
                   return false;
                 }

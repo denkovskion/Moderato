@@ -258,9 +258,9 @@ bool Pawn::generateMoves(
   for (int direction : directions) {
     int target = origin + direction;
     if (!(target & 136)) {
-      const std::unique_ptr<Piece>& piece = board.at(target);
-      if (piece) {
-        if (piece->isBlack() != black_) {
+      const std::unique_ptr<Piece>& other = board.at(target);
+      if (other) {
+        if (other->isBlack() != black_) {
           if (origin % 16 == (black_ ? 1 : 6)) {
             const std::map<int, std::deque<std::unique_ptr<Piece>>>&
                 promotions = box.at(black_);
@@ -327,9 +327,9 @@ bool Pawn::generateMoves(
   for (int direction : directions) {
     int target = origin + direction;
     if (!(target & 136)) {
-      const std::unique_ptr<Piece>& piece = board.at(target);
-      if (piece) {
-        if (piece->isBlack() != black_) {
+      const std::unique_ptr<Piece>& other = board.at(target);
+      if (other) {
+        if (other->isBlack() != black_) {
           if (origin % 16 == (black_ ? 1 : 6)) {
             const std::map<int, std::deque<std::unique_ptr<Piece>>>&
                 promotions = box.at(black_);
