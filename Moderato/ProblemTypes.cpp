@@ -25,6 +25,7 @@
 #include "ProblemTypes.h"
 
 #include <algorithm>
+#include <climits>
 #include <iostream>
 #include <sstream>
 
@@ -740,7 +741,7 @@ void Perft::solve(const AnalysisOptions& analysisOptions,
 void Perft::solve(Position& position, int nMoves, bool halfMove) {
   std::vector<std::unique_ptr<Move>> pseudoLegalMoves;
   if (position.isLegal(pseudoLegalMoves)) {
-    long nNodes;
+    long long nNodes;
     if (halfMove) {
       nNodes = analyse(position, nMoves * 2 + 1, pseudoLegalMoves);
     } else {
@@ -751,13 +752,13 @@ void Perft::solve(Position& position, int nMoves, bool halfMove) {
     std::cout << "Illegal position." << std::endl;
   }
 }
-long Perft::analyse(
+long long Perft::analyse(
     Position& position, int depth,
     const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves) {
   if (depth == 0) {
     return 1;
   }
-  long nNodes = 0;
+  long long nNodes = 0;
   for (const std::unique_ptr<Move>& move : pseudoLegalMoves) {
     std::vector<std::unique_ptr<Move>> pseudoLegalMovesNext;
     if (move->make(position, pseudoLegalMovesNext)) {
