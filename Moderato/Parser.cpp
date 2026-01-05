@@ -125,7 +125,7 @@ enum Piece {
   BlackPawn
 };
 enum Colour { White, Black };
-enum Castling { WhiteShort, WhiteLong, BlackShort, BlackLong };
+enum CastlingRight { WhiteShort, WhiteLong, BlackShort, BlackLong };
 struct Square {
   int index;
   bool present;
@@ -138,8 +138,8 @@ struct Operation {
 struct Position {
   std::array<Piece, 64> board;
   Colour sideToMove;
-  std::set<Castling> castlings;
-  Square enPassant;
+  std::set<CastlingRight> castlingRights;
+  Square enPassantTarget;
   Operation operation;
 };
 
@@ -493,13 +493,13 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                   if (std::regex_match(token, std::regex("\\bK?Q?k?q?|-"))) {
                     if (!(token == "-")) {
                       for (unsigned char symbol : token) {
-                        model::Castling castling =
+                        model::CastlingRight castlingRight =
                             symbol == 'K'   ? model::WhiteShort
                             : symbol == 'Q' ? model::WhiteLong
                             : symbol == 'k' ? model::BlackShort
                             : symbol == 'q' ? model::BlackLong
                                             : throw symbol;
-                        position.castlings.insert(castling);
+                        position.castlingRights.insert(castlingRight);
                       }
                     }
                     transitions = {"4"};
@@ -510,7 +510,8 @@ std::istream& operator>>(std::istream& input, std::vector<Task>& tasks) {
                     if (!(token == "-")) {
                       int file = token.at(0) - 'a' + 1;
                       int rank = token.at(1) - '1' + 1;
-                      position.enPassant = {(8 - rank) * 8 + file - 1, true};
+                      position.enPassantTarget = {(8 - rank) * 8 + file - 1,
+                                                  true};
                     }
                     transitions = {"5"};
                     return true;
@@ -1032,47 +1033,48 @@ void validatePosition(const model::Position& specification) {
         "Position conversion failure (not accepted number of kings).");
   }
   if (!std::all_of(
-          specification.castlings.cbegin(), specification.castlings.cend(),
-          [&specification](const model::Castling& castling) {
-            return (castling == model::WhiteShort ||
-                            castling == model::WhiteLong
+          specification.castlingRights.cbegin(),
+          specification.castlingRights.cend(),
+          [&specification](const model::CastlingRight& castlingRight) {
+            return (castlingRight == model::WhiteShort ||
+                            castlingRight == model::WhiteLong
                         ? specification.board.at(60) == model::WhiteKing
-                    : castling == model::BlackShort ||
-                            castling == model::BlackLong
+                    : castlingRight == model::BlackShort ||
+                            castlingRight == model::BlackLong
                         ? specification.board.at(4) == model::BlackKing
-                        : throw castling) &&
-                   (castling == model::WhiteShort
+                        : throw castlingRight) &&
+                   (castlingRight == model::WhiteShort
                         ? specification.board.at(63) == model::WhiteRook
-                    : castling == model::WhiteLong
+                    : castlingRight == model::WhiteLong
                         ? specification.board.at(56) == model::WhiteRook
-                    : castling == model::BlackShort
+                    : castlingRight == model::BlackShort
                         ? specification.board.at(7) == model::BlackRook
-                    : castling == model::BlackLong
+                    : castlingRight == model::BlackLong
                         ? specification.board.at(0) == model::BlackRook
-                        : throw castling);
+                        : throw castlingRight);
           })) {
     throw std::invalid_argument(
         "Position conversion failure (not accepted castling rights).");
   }
-  if (specification.enPassant.present) {
+  if (specification.enPassantTarget.present) {
     if (!(specification.sideToMove == model::White
-              ? specification.enPassant.index >= 16 &&
-                    specification.enPassant.index <= 23 &&
-                    specification.board.at(specification.enPassant.index) ==
-                        0 &&
-                    specification.board.at(specification.enPassant.index - 8) ==
-                        0 &&
-                    specification.board.at(specification.enPassant.index + 8) ==
-                        model::BlackPawn
+              ? specification.enPassantTarget.index >= 16 &&
+                    specification.enPassantTarget.index <= 23 &&
+                    specification.board.at(
+                        specification.enPassantTarget.index) == 0 &&
+                    specification.board.at(specification.enPassantTarget.index -
+                                           8) == 0 &&
+                    specification.board.at(specification.enPassantTarget.index +
+                                           8) == model::BlackPawn
           : specification.sideToMove == model::Black
-              ? specification.enPassant.index >= 40 &&
-                    specification.enPassant.index <= 47 &&
-                    specification.board.at(specification.enPassant.index) ==
-                        0 &&
-                    specification.board.at(specification.enPassant.index + 8) ==
-                        0 &&
-                    specification.board.at(specification.enPassant.index - 8) ==
-                        model::WhitePawn
+              ? specification.enPassantTarget.index >= 40 &&
+                    specification.enPassantTarget.index <= 47 &&
+                    specification.board.at(
+                        specification.enPassantTarget.index) == 0 &&
+                    specification.board.at(specification.enPassantTarget.index +
+                                           8) == 0 &&
+                    specification.board.at(specification.enPassantTarget.index -
+                                           8) == model::WhitePawn
               : throw specification.sideToMove)) {
       throw std::invalid_argument(
           "Position conversion failure (not accepted en passant square).");
@@ -1130,24 +1132,28 @@ Task convertPosition(const model::Position& specification) {
   std::stack<std::unique_ptr<Piece>> table;
   bool blackToMove = convertColour(specification.sideToMove);
   std::pair<std::set<int>, std::shared_ptr<int>> state;
-  for (const model::Castling& castling : specification.castlings) {
+  for (const model::CastlingRight& castlingRight :
+       specification.castlingRights) {
     for (int index :
-         {castling == model::WhiteShort || castling == model::WhiteLong ? 60
-          : castling == model::BlackShort || castling == model::BlackLong
+         {castlingRight == model::WhiteShort ||
+                  castlingRight == model::WhiteLong
+              ? 60
+          : castlingRight == model::BlackShort ||
+                  castlingRight == model::BlackLong
               ? 4
-              : throw castling,
-          castling == model::WhiteShort   ? 63
-          : castling == model::WhiteLong  ? 56
-          : castling == model::BlackShort ? 7
-          : castling == model::BlackLong  ? 0
-                                          : throw castling}) {
+              : throw castlingRight,
+          castlingRight == model::WhiteShort   ? 63
+          : castlingRight == model::WhiteLong  ? 56
+          : castlingRight == model::BlackShort ? 7
+          : castlingRight == model::BlackLong  ? 0
+                                               : throw castlingRight}) {
       int square = 16 * (index % 8) + 7 - index / 8;
       state.first.insert(square);
     }
   }
-  if (specification.enPassant.present) {
-    int square = 16 * (specification.enPassant.index % 8) + 7 -
-                 specification.enPassant.index / 8;
+  if (specification.enPassantTarget.present) {
+    int square = 16 * (specification.enPassantTarget.index % 8) + 7 -
+                 specification.enPassantTarget.index / 8;
     state.second = std::make_shared<int>(square);
   }
   std::stack<std::pair<std::set<int>, std::shared_ptr<int>>> memory;

@@ -47,9 +47,9 @@ void QuietMove::revertPieces(
     std::array<std::unique_ptr<Piece>, 128>& board) const {
   board.at(origin_) = std::move(board.at(target_));
 }
-void QuietMove::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void QuietMove::updateCastlingOrigins(std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
 }
 void QuietMove::preWrite(Position& position, std::ostream& lanBuilder,
                          int translate) const {
@@ -109,11 +109,11 @@ void Castling::revertPieces(
   board.at(origin2_) = std::move(board.at(target2_));
   board.at(origin_) = std::move(board.at(target_));
 }
-void Castling::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(origin2_);
-  castlings.erase(target2_);
+void Castling::updateCastlingOrigins(std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
+  castlingOrigins.erase(origin2_);
+  castlingOrigins.erase(target2_);
 }
 
 LongCastling::LongCastling(int origin, int target, int origin2, int target2)
@@ -144,13 +144,14 @@ void DoubleStep::write(std::ostream& output) const {
   output << "DoubleStep[origin=" << origin_ << ", target=" << target_
          << ", stop=" << stop_ << "]";
 }
-void DoubleStep::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
+void DoubleStep::updateCastlingOrigins(std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
+  castlingOrigins.erase(stop_);
 }
-void DoubleStep::updateEnPassant(std::shared_ptr<int>& enPassant) const {
-  enPassant = std::make_shared<int>(stop_);
+void DoubleStep::updateEnPassantTarget(
+    std::shared_ptr<int>& enPassantTarget) const {
+  enPassantTarget = std::make_shared<int>(stop_);
 }
 
 EnPassant::EnPassant(int origin, int target, int stop)
@@ -170,10 +171,10 @@ void EnPassant::revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
   board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void EnPassant::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
+void EnPassant::updateCastlingOrigins(std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
+  castlingOrigins.erase(stop_);
 }
 void EnPassant::preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                          std::ostream& lanBuilder, int translate) const {

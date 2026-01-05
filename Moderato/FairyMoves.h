@@ -41,7 +41,7 @@ class CirceCapture : public Capture, protected CirceMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -55,7 +55,7 @@ class CirceEnPassant : public EnPassant, protected CirceMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -73,7 +73,7 @@ class CircePromotionCapture : public PromotionCapture, protected CirceMove {
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -98,7 +98,7 @@ class AntiCirceCapture : public Capture, protected AntiCirceMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -112,7 +112,7 @@ class AntiCirceEnPassant : public EnPassant, protected AntiCirceMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -132,7 +132,7 @@ class AntiCircePromotionCapture : public PromotionCapture,
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -156,7 +156,7 @@ class AndernachCapture : public Capture, protected AndernachMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -170,7 +170,7 @@ class AndernachEnPassant : public EnPassant, protected AndernachMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -189,7 +189,7 @@ class AndernachPromotionCapture : public PromotionCapture,
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -213,7 +213,7 @@ class AntiAndernachQuietMove : public QuietMove, protected AntiAndernachMove {
       std::array<std::unique_ptr<Piece>, 128>& board) const override;
   void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -231,7 +231,7 @@ class AntiAndernachPromotion : public Promotion, protected AntiAndernachMove {
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box)
       const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -257,7 +257,7 @@ class CirceAndernachCapture : public Capture, protected CirceAndernachMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -272,7 +272,7 @@ class CirceAndernachEnPassant : public EnPassant, protected CirceAndernachMove {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -292,7 +292,7 @@ class CirceAndernachPromotionCapture : public PromotionCapture,
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&
@@ -318,7 +318,7 @@ class AntiCirceAndernachCapture : public Capture,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -333,7 +333,7 @@ class AntiCirceAndernachEnPassant : public EnPassant,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 
@@ -353,7 +353,7 @@ class AntiCirceAndernachPromotionCapture : public PromotionCapture,
       std::array<std::unique_ptr<Piece>, 128>& board,
       std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>& box,
       std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(
       const std::array<std::unique_ptr<Piece>, 128>& board,
       const std::map<bool, std::map<int, std::deque<std::unique_ptr<Piece>>>>&

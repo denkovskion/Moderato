@@ -66,8 +66,9 @@ class NullMove : public Move {
   void updateState(
       bool& blackToMove, std::pair<std::set<int>, std::shared_ptr<int>>& state,
       std::stack<std::pair<std::set<int>, std::shared_ptr<int>>>& memory) const;
-  virtual void updateCastlings(std::set<int>& castlings) const;
-  virtual void updateEnPassant(std::shared_ptr<int>& enPassant) const;
+  virtual void updateCastlingOrigins(std::set<int>& castlingOrigins) const;
+  virtual void updateEnPassantTarget(
+      std::shared_ptr<int>& enPassantTarget) const;
   void revertState(Position& position) const override;
   void revertState(
       bool& blackToMove, std::pair<std::set<int>, std::shared_ptr<int>>& state,

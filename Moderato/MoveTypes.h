@@ -37,7 +37,7 @@ class QuietMove : public NullMove {
   void revertPieces(Position& position) const override;
   virtual void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board) const;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(Position& position, std::ostream& lanBuilder,
                 int translate) const override;
   virtual void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -72,7 +72,7 @@ class Castling : public QuietMove {
       std::array<std::unique_ptr<Piece>, 128>& board) const override;
   void revertPieces(
       std::array<std::unique_ptr<Piece>, 128>& board) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
 
  protected:
   const int origin2_;
@@ -100,8 +100,9 @@ class ShortCastling : public Castling {
 
 class DoubleStep : public QuietMove {
   void write(std::ostream& output) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
-  void updateEnPassant(std::shared_ptr<int>& enPassant) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
+  void updateEnPassantTarget(
+      std::shared_ptr<int>& enPassantTarget) const override;
 
  protected:
   const int stop_;
@@ -116,7 +117,7 @@ class EnPassant : public Capture {
                     std::stack<std::unique_ptr<Piece>>& table) const override;
   void revertPieces(std::array<std::unique_ptr<Piece>, 128>& board,
                     std::stack<std::unique_ptr<Piece>>& table) const override;
-  void updateCastlings(std::set<int>& castlings) const override;
+  void updateCastlingOrigins(std::set<int>& castlingOrigins) const override;
   void preWrite(const std::array<std::unique_ptr<Piece>, 128>& board,
                 std::ostream& lanBuilder, int translate) const override;
 

@@ -99,14 +99,14 @@ bool King::generateMoves(
   if (!Leaper::generateMoves(board, origin, moveFactory, moves)) {
     return false;
   }
-  const std::set<int>& castlings = state.first;
-  if (origin == (black_ ? 71 : 64) && castlings.count(origin)) {
+  const std::set<int>& castlingOrigins = state.first;
+  if (origin == (black_ ? 71 : 64) && castlingOrigins.count(origin)) {
     for (int direction : {-16, 16}) {
       int distance = 1;
       while (true) {
         int origin2 = origin + distance * direction;
         if (!(origin2 & 136)) {
-          if (castlings.count(origin2)) {
+          if (castlingOrigins.count(origin2)) {
             int target = origin + 2 * direction;
             int target2 = origin + direction;
             if (direction > 0) {
@@ -279,8 +279,8 @@ bool Pawn::generateMoves(
           }
         }
       } else {
-        const std::shared_ptr<int>& enPassant = state.second;
-        if (enPassant && target == *enPassant) {
+        const std::shared_ptr<int>& enPassantTarget = state.second;
+        if (enPassantTarget && target == *enPassantTarget) {
           int stop = target + (black_ ? 1 : -1);
           if (!moveFactory.generateEnPassant(board, origin, target, stop,
                                              moves)) {
@@ -348,8 +348,8 @@ bool Pawn::generateMoves(
           }
         }
       } else {
-        const std::shared_ptr<int>& enPassant = state.second;
-        if (enPassant && target == *enPassant) {
+        const std::shared_ptr<int>& enPassantTarget = state.second;
+        if (enPassantTarget && target == *enPassantTarget) {
           int stop = target + (black_ ? 1 : -1);
           if (!moveFactory.generateEnPassant(board, origin, target, stop)) {
             return false;

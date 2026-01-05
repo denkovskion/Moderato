@@ -51,13 +51,13 @@ void CirceCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void CirceCapture::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void CirceCapture::updateCastlingOrigins(std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void CirceCapture::preWrite(
@@ -93,14 +93,15 @@ void CirceEnPassant::revertPieces(
   board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void CirceEnPassant::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
+void CirceEnPassant::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
+  castlingOrigins.erase(stop_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void CirceEnPassant::preWrite(
@@ -144,13 +145,14 @@ void CircePromotionCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void CircePromotionCapture::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void CircePromotionCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void CircePromotionCapture::preWrite(
@@ -188,13 +190,14 @@ void AntiCirceCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void AntiCirceCapture::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void AntiCirceCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void AntiCirceCapture::preWrite(
@@ -227,14 +230,15 @@ void AntiCirceEnPassant::revertPieces(
   board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void AntiCirceEnPassant::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
+void AntiCirceEnPassant::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
+  castlingOrigins.erase(stop_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void AntiCirceEnPassant::preWrite(
@@ -276,14 +280,14 @@ void AntiCircePromotionCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void AntiCircePromotionCapture::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void AntiCircePromotionCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void AntiCircePromotionCapture::preWrite(
@@ -321,12 +325,13 @@ void AndernachCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void AndernachCapture::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void AndernachCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
 }
 void AndernachCapture::preWrite(
@@ -359,14 +364,15 @@ void AndernachEnPassant::revertPieces(
   board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void AndernachEnPassant::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void AndernachEnPassant::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
-  castlings.erase(stop_);
+  castlingOrigins.erase(stop_);
 }
 void AndernachEnPassant::preWrite(
     const std::array<std::unique_ptr<Piece>, 128>& board,
@@ -406,13 +412,13 @@ void AndernachPromotionCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void AndernachPromotionCapture::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void AndernachPromotionCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
 }
 void AndernachPromotionCapture::preWrite(
@@ -445,12 +451,13 @@ void AntiAndernachQuietMove::revertPieces(
   board.at(target_)->isBlack() = !board.at(target_)->isBlack();
   board.at(origin_) = std::move(board.at(target_));
 }
-void AntiAndernachQuietMove::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void AntiAndernachQuietMove::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
 }
 void AntiAndernachQuietMove::preWrite(
@@ -488,12 +495,13 @@ void AntiAndernachPromotion::revertPieces(
   board.at(origin_) = std::move(box.at(black_).at(order_).back());
   box.at(black_).at(order_).pop_back();
 }
-void AntiAndernachPromotion::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void AntiAndernachPromotion::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
 }
 void AntiAndernachPromotion::preWrite(
@@ -539,17 +547,18 @@ void CirceAndernachCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void CirceAndernachCapture::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void CirceAndernachCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling2_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void CirceAndernachCapture::preWrite(
@@ -591,18 +600,19 @@ void CirceAndernachEnPassant::revertPieces(
   board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void CirceAndernachEnPassant::updateCastlings(std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void CirceAndernachEnPassant::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling2_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
-  castlings.erase(stop_);
+  castlingOrigins.erase(stop_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void CirceAndernachEnPassant::preWrite(
@@ -650,18 +660,18 @@ void CirceAndernachPromotionCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void CirceAndernachPromotionCapture::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
+void CirceAndernachPromotionCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
   if (castling2_) {
-    castlings.insert(target_);
+    castlingOrigins.insert(target_);
   } else {
-    castlings.erase(target_);
+    castlingOrigins.erase(target_);
   }
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void CirceAndernachPromotionCapture::preWrite(
@@ -703,14 +713,14 @@ void AntiCirceAndernachCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void AntiCirceAndernachCapture::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void AntiCirceAndernachCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void AntiCirceAndernachCapture::preWrite(
@@ -747,15 +757,15 @@ void AntiCirceAndernachEnPassant::revertPieces(
   board.at(stop_) = std::move(table.top());
   table.pop();
 }
-void AntiCirceAndernachEnPassant::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
-  castlings.erase(stop_);
+void AntiCirceAndernachEnPassant::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
+  castlingOrigins.erase(stop_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void AntiCirceAndernachEnPassant::preWrite(
@@ -798,14 +808,14 @@ void AntiCirceAndernachPromotionCapture::revertPieces(
   board.at(target_) = std::move(table.top());
   table.pop();
 }
-void AntiCirceAndernachPromotionCapture::updateCastlings(
-    std::set<int>& castlings) const {
-  castlings.erase(origin_);
-  castlings.erase(target_);
+void AntiCirceAndernachPromotionCapture::updateCastlingOrigins(
+    std::set<int>& castlingOrigins) const {
+  castlingOrigins.erase(origin_);
+  castlingOrigins.erase(target_);
   if (castling_) {
-    castlings.insert(rebirth_);
+    castlingOrigins.insert(rebirth_);
   } else {
-    castlings.erase(rebirth_);
+    castlingOrigins.erase(rebirth_);
   }
 }
 void AntiCirceAndernachPromotionCapture::preWrite(
