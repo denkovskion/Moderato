@@ -155,8 +155,9 @@ class MateSearch : public Problem {
 
 class Perft : public HelpProblem {
   void solve(Position& position, int nMoves, bool halfMove);
-  long long analyse(Position& position, int depth,
-                    const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves);
+  unsigned long long analyse(
+      Position& position, int depth,
+      const std::vector<std::unique_ptr<Move>>& pseudoLegalMoves);
   void write(std::ostream& output) const override;
 
  public:
