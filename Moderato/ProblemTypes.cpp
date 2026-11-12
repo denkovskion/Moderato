@@ -671,7 +671,7 @@ void MateSearch::solve(Position& position, int nMoves, int translate) {
       }
       move->unmake(position);
     }
-    std::cout << toOrderedAndFormatted(points) << std::endl;
+    std::cout << toFormatted(points) << std::endl;
   } else {
     std::cout << "Illegal position." << std::endl;
   }

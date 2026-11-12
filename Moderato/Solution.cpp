@@ -229,9 +229,12 @@ void write(
   }
 }
 
-std::string toOrderedAndFormatted(
+std::vector<std::pair<std::string, std::string>> toGrouped(
+    const std::vector<std::pair<std::string, std::string>>& points);
+
+std::string toFormatted(
     const std::vector<std::pair<std::string, std::string>>& points) {
-  std::vector<std::pair<std::string, std::string>> results = points;
+  std::vector<std::pair<std::string, std::string>> results = toGrouped(points);
   std::stable_sort(results.begin(), results.end(),
                    [](const auto& point1, const auto& point2) {
                      return (point1.first < point2.first);
@@ -245,6 +248,22 @@ std::string toOrderedAndFormatted(
     }
   }
   return stringBuilder.str();
+}
+
+std::vector<std::pair<std::string, std::string>> toGrouped(
+    const std::vector<std::pair<std::string, std::string>>& points) {
+  std::vector<std::pair<std::string, std::string>> results;
+  for (auto iPoint = points.cbegin(); iPoint != points.cend(); iPoint++) {
+    auto iResult = std::find_if(
+        results.begin(), results.end(),
+        [iPoint](const auto& result) { return result.first == iPoint->first; });
+    if (iResult == results.end()) {
+      results.push_back(*iPoint);
+    } else {
+      iResult->second += "," + iPoint->second;
+    }
+  }
+  return results;
 }
 
 }  // namespace moderato

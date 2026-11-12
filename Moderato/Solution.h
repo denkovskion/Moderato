@@ -55,7 +55,7 @@ std::vector<std::deque<std::pair<Play, std::string>>> toFlattened(
 std::string toFormatted(
     const std::vector<std::deque<std::pair<Play, std::string>>>& lines);
 
-std::string toOrderedAndFormatted(
+std::string toFormatted(
     const std::vector<std::pair<std::string, std::string>>& points);
 
 }  // namespace moderato
