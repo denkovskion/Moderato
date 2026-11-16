@@ -1,0 +1,57 @@
+name: Build and upload release artifacts
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+env:
+  APP_NAME: Moderato
+  APP_VERSION: 1.2
+
+jobs:
+  build:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        include:
+          - platform: x86
+            suffix: Win32
+            out_dir: Release
+          - platform: x64
+            suffix: Win64
+            out_dir: x64/Release
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: microsoft/setup-msbuild@v3
+
+      - name: Build solution
+        shell: pwsh
+        run: |
+          msbuild "$env:APP_NAME.sln" `
+            /p:Configuration=Release `
+            /p:Platform=${{ matrix.platform }}
+
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          $STAGE_DIR = "dist/$env:APP_NAME"
+          $ZIP_NAME = "$($env:APP_NAME)_$($env:APP_VERSION)_${{ matrix.suffix }}.zip"
+          New-Item -ItemType Directory -Path $STAGE_DIR -Force
+          Copy-Item "${{ matrix.out_dir }}/$env:APP_NAME.exe" "$STAGE_DIR/"
+          Copy-Item "LICENSE" "$STAGE_DIR/"
+          Copy-Item "*.md" "$STAGE_DIR/"
+          Compress-Archive -Path $STAGE_DIR -DestinationPath $ZIP_NAME
+          echo "ASSET_PATH=$ZIP_NAME" >> $env:GITHUB_ENV
+
+      - name: Upload asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} $env:ASSET_PATH
